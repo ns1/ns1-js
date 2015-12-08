@@ -1,0 +1,21 @@
+{
+  "name": "nsone-js",
+  "version": "1.0.0",
+  "description": "NS1.com JS API",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/babel-node script.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/sankho/nsone-js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/sankho/nsone-js#readme",
+  "dependencies": {
+    "babel": "6.3.13",
+    "babel-cli": "6.3.15",
+    "superagent": "1.5.0"
+  }
+}
