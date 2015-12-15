@@ -1,60 +1,72 @@
 "use strict";
 
-let expect = require('chai').expect,
-    NS1    = require('../../lib'),
-    utils  = require('./')
+let expect     = require('chai').expect,
+    NS1        = require('../../lib'),
+    utils      = require('./'),
+    pluralize  = require('pluralize')
 
-const TEST_ZONE_NAME    = 'testdomain.test',
-      NEW_ZONE_NAME     = 'newtestdomain.test',
-      DEFAULT_TTL_VALUE = 3600
+let total_objects = 0
 
-let total_zones = 0
+module.exports = function(options) {
 
-module.exports = function() {
+  let {
+    subject, 
+    existing_val, 
+    existing_key,
+    new_object_val,
+    new_object_key,
+    update_val,
+    update_key
+  } = options
+    
+  let class_name         = `NS1.${options.subject.name}`
 
-  describe(`NS1.Zone.find()`, () => {
-    it(`Should return all zones in an array when no domain specified`, () => {
-      return NS1.Zone.find().then((zones) => {
-        expect(Array.isArray(zones)).to.eq(true)
-        total_zones = zones.length
+  describe(`${class_name}.find()`, () => {
+    it(`Should return all relevant objects in an array`, () => {
+      return subject.find().then((objects) => {
+        expect(Array.isArray(objects)).to.eq(true)
+        expect(objects[0].constructor).to.eq(subject)
+        total_objects = objects.length
       })
     })
 
-    it (`Should return a single zone when a domain is specified`, () => {
-      return NS1.Zone.find(TEST_ZONE_NAME).then((zone) => {
-        expect(typeof zone).to.eq('object')
-        expect(zone.attributes.zone).to.eq(TEST_ZONE_NAME)
+    it (`Should return a single object when an ID is specified`, () => {
+      return subject.find(existing_val).then((object) => {
+        expect(typeof object).to.eq('object')
+        expect(Array.isArray(object)).to.eq(false)
+        expect(object.constructor).to.eq(subject)
+        expect(object.attributes[existing_key]).to.eq(existing_val)
       })
     })
   })
 
-  describe(`NS1.Zone#update()`, () => {
-    let old_refresh, new_refresh
+  describe(`${class_name}#update()`, () => {
+    let old_update_attrs = {},
+        new_update_attrs = {}
+        
+    new_update_attrs[update_key] = update_val
 
     after(() => {
-      return NS1.Zone.find(TEST_ZONE_NAME).then((zone) => {
-        return zone.update({ refresh: old_refresh })
+      return subject.find(existing_val).then((object) => {
+        return object.update(old_update_attrs)
       })
     })
 
-    it(`Should update a single zone's TTL value`, () => {
-      let zone
+    it(`Should update a resource's value`, () => {
+      let object
 
-      return NS1.Zone.find(TEST_ZONE_NAME).then((z) => {
-        zone = z
-        old_refresh = zone.attributes.refresh,
-        new_refresh = old_refresh !== 665 ? 665 : 1;
+      return NS1.Zone.find(existing_val).then((_object) => {
+        object                       = _object
+        old_update_attrs[update_key] = object.attributes[update_key]
 
-        return zone.update({
-          refresh: new_refresh
-        })
-      }).then((new_zone) => {
-        expect(new_zone).to.deep.equal(zone)
-        expect(new_zone.attributes.refresh).to.eq(new_refresh)
+        return object.update(new_update_attrs)
+      }).then((new_object) => {
+        expect(new_object).to.deep.equal(object)
+        expect(new_object.attributes.refresh).to.eq(update_val)
 
-        return NS1.Zone.find(TEST_ZONE_NAME)
-      }).then((zone_check) => {
-        expect(zone_check.attributes.refresh).to.eq(new_refresh)
+        return NS1.Zone.find(existing_val)
+      }).then((object_check) => {
+        expect(object_check.attributes[update_key]).to.eq(update_val)
       })
     })
   })
@@ -64,15 +76,15 @@ module.exports = function() {
       let zone
 
       return NS1.Zone.create({ 
-        zone: NEW_ZONE_NAME 
+        zone: new_object_val 
       }).then((z) => {
         zone = z
-        expect(zone.attributes.zone).to.eq(NEW_ZONE_NAME)
-        expect(zone.attributes.ttl).to.eq(DEFAULT_TTL_VALUE)
+        expect(zone.attributes.zone).to.eq(new_object_val)
+        expect(zone.attributes.ttl).to.eq(3600)
 
         return NS1.Zone.find()
       }).then((zones) => {
-        expect(zones.length).to.eq(total_zones + 1)
+        expect(zones.length).to.eq(total_objects + 1)
 
         return zone.destroy()
       }).then((destroyed) => {
@@ -80,7 +92,7 @@ module.exports = function() {
 
         return NS1.Zone.find()
       }).then((zones) => {
-        expect(zones.length).to.eq(total_zones)
+        expect(zones.length).to.eq(total_objects)
       })
     })
   })
