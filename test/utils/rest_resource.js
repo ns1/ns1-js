@@ -1,8 +1,8 @@
 "use strict";
 
 let expect = require('chai').expect,
-    NS1    = require('../lib'),
-    utils  = require('./utils')
+    NS1    = require('../../lib'),
+    utils  = require('./')
 
 const TEST_ZONE_NAME    = 'testdomain.test',
       NEW_ZONE_NAME     = 'newtestdomain.test',
@@ -10,7 +10,7 @@ const TEST_ZONE_NAME    = 'testdomain.test',
 
 let total_zones = 0
 
-utils.setup_context('Base RestResource Class', function() {
+module.exports = function() {
 
   describe(`NS1.Zone.find()`, () => {
     it(`Should return all zones in an array when no domain specified`, () => {
@@ -84,4 +84,4 @@ utils.setup_context('Base RestResource Class', function() {
       })
     })
   })
-})
+}
