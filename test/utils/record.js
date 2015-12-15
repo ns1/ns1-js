@@ -4,9 +4,9 @@ let nock = require('nock'),
     path = require('path'),
     fs   = require('fs')
 
-module.exports = function (name) {
+module.exports = function (name, force) {
   let fp              = `test/fixtures/${name}.js`,
-      force_recording = !!process.env.NS1_NOCK_RECORD,
+      force_recording = force || !!process.env.NS1_NOCK_RECORD,
       has_fixtures    = false
 
   return {
