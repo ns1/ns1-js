@@ -1,7 +1,8 @@
 "use strict";
 
 let expect = require('chai').expect,
-    NS1    = require('../lib')
+    NS1    = require('../lib'),
+    record = require('./record')('rest_resource')
 
 const TEST_ZONE_NAME    = 'testdomain.test',
       NEW_ZONE_NAME     = 'newtestdomain.test',
@@ -17,6 +18,13 @@ if (process.env.NS1_JS_TEST_API_KEY) {
 }
 
 context('Base RestResource Class', () => {
+
+  before(function() {
+    record.before()
+    this.timeout(10000)
+  })
+
+  after(record.after)
 
   describe(`NS1.Zone.find()`, () => {
     it(`Should return all zones in an array when no domain specified`, () => {

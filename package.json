@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 mocha --require babel-core/register --full-trace -R nyan",
+    "test-and-record": "NS1_NOCK_RECORD=true npm run test",
     "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]"
   },
   "repository": {
@@ -22,6 +23,7 @@
     "browserify": "12.0.1",
     "chai": "3.4.1",
     "mocha": "2.3.4",
+    "nock": "3.4.0",
     "pluralize": "1.2.1",
     "superagent": "1.5.0"
   }
