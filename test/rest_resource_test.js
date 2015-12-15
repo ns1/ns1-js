@@ -2,7 +2,7 @@
 
 let expect = require('chai').expect,
     NS1    = require('../lib'),
-    record = require('./utils/record')('rest_resource')
+    utils  = require('./utils')
 
 const TEST_ZONE_NAME    = 'testdomain.test',
       NEW_ZONE_NAME     = 'newtestdomain.test',
@@ -10,14 +10,7 @@ const TEST_ZONE_NAME    = 'testdomain.test',
 
 let total_zones = 0
 
-context('Base RestResource Class', () => {
-
-  before(function() {
-    this.timeout(10000)
-    record.before()
-  })
-
-  after(record.after)
+utils.setup_context('Base RestResource Class', function() {
 
   describe(`NS1.Zone.find()`, () => {
     it(`Should return all zones in an array when no domain specified`, () => {
