@@ -2,7 +2,7 @@
 
 let expect = require('chai').expect,
     NS1    = require('../lib'),
-    record = require('./record')('rest_resource')
+    record = require('./utils/record')('rest_resource')
 
 const TEST_ZONE_NAME    = 'testdomain.test',
       NEW_ZONE_NAME     = 'newtestdomain.test',
@@ -10,18 +10,11 @@ const TEST_ZONE_NAME    = 'testdomain.test',
 
 let total_zones = 0
 
-if (process.env.NS1_JS_TEST_API_KEY) {
-  NS1.setApiKey(process.env.NS1_JS_TEST_API_KEY)
-} else {
-  throw new Error("NS1 API key required. Please set env variable NS1_JS_TEST_API_KEY")
-  process.exit(1)
-}
-
 context('Base RestResource Class', () => {
 
   before(function() {
-    record.before()
     this.timeout(10000)
+    record.before()
   })
 
   after(record.after)

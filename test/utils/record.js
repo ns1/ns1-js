@@ -1,6 +1,17 @@
-var nock = require('nock');
-var path = require('path');
-var fs = require('fs');
+"use strict";
+
+let nock = require('nock'),
+    path = require('path'),
+    fs   = require('fs'),
+    NS1  = require('../../lib')
+
+if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.Request.NS1_API_KEY) {
+  NS1.setApiKey(process.env.NS1_JS_TEST_API_KEY)
+} else {
+  // TODO: Below error should probably come from lib internally.
+  throw new Error("NS1 API key required. Please set env variable NS1_JS_TEST_API_KEY")
+  process.exit(1)
+}
 
 module.exports = function (name, options) {
   // options tell us where to store our fixtures
