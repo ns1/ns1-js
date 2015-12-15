@@ -39,6 +39,6 @@ module.exports = {
     })
   },
 
-  rest_resource_tests: require('./rest_resource')
+  rest_resource_tests: require('./rest_resource_tests')
 
 }
