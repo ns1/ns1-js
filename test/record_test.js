@@ -46,4 +46,14 @@ utils.setup_context('NS1.Record', { record: true }, function() {
       })
     })
   })
+
+  describe('NS1.Record.filtertypes()', function() {
+    it('Should return the filtertypes list as JSON', function() {
+      NS1.Record.metatypes().then((types) => {
+        expect(typeof types).to.eq('object')
+        expect(types.up.inputs).to.eq(["up"])
+        expect(types.up.shortdesc).to.eq('Removes "down" answers')
+      })
+    })
+  })
 })
