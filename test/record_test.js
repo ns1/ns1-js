@@ -33,7 +33,7 @@ utils.setup_context('NS1.Record', { record: true }, function() {
 
   describe('NS1.Record.find()', function() {
     it('Should throw an error without any supplied arguments', function() {
-      expect(() => NS1.Record.find()).to.throw("Records can only be listed through a Zone, try new NS1.Zone(zone.name).attributes.records")
+      expect(NS1.Record.find).to.throw("Records can only be listed through a Zone, try new NS1.Zone(zone.name).attributes.records")
     })
   })
 })
