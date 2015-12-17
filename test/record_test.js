@@ -4,7 +4,7 @@ let expect = require('chai').expect,
     NS1    = require('../lib'),
     utils  = require('./utils')
 
-utils.setup_context('NS1.Record', { record: true }, function() {
+utils.setup_context('NS1.Record', function() {
   utils.rest_resource_tests.call(this, {
     subject:        NS1.Record,
     existing_val:   'testdomain.test/testdomain.test/NS',
