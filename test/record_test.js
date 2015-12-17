@@ -36,4 +36,14 @@ utils.setup_context('NS1.Record', { record: true }, function() {
       expect(NS1.Record.find).to.throw("Records can only be listed through a Zone, try new NS1.Zone(zone.name).attributes.records")
     })
   })
+
+  describe('NS1.Record.metatypes()', function() {
+    it('Should return the metatypes list as JSON', function() {
+      NS1.Record.metatypes().then((types) => {
+        expect(typeof types).to.eq('object')
+        expect(types.up.category).to.eq('status')
+        expect(types.up.shortdesc).to.eq('Up/down')
+      })
+    })
+  })
 })
