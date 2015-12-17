@@ -13,7 +13,7 @@
     "url": "git+ssh://git@bitbucket.org/sankho/nsone-js.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://bitbucket.org/sankho/nsone-js#readme",
   "dependencies": {
     "babel": "6.3.13",
