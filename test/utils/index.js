@@ -8,8 +8,8 @@ let context_defaults = {
   record: false
 }
 
-if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.Request.NS1_API_KEY) {
-  NS1.setApiKey(process.env.NS1_JS_TEST_API_KEY)
+if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.Request.get_api_key()) {
+  NS1.set_api_key(process.env.NS1_JS_TEST_API_KEY)
 } else {
   // TODO: Below error should probably come from lib internally.
   throw new Error("NS1 API key required. Please set env variable NS1_JS_TEST_API_KEY")
