@@ -37,9 +37,10 @@ utils.setup_context('NS1.Record', function() {
     })
   })
 
+  // TODO: Make sure these actually do something
   describe('NS1.Record.metatypes()', function() {
     it('Should return the metatypes list as JSON', function() {
-      NS1.Record.metatypes().then((types) => {
+      return NS1.Record.metatypes().then((types) => {
         expect(typeof types).to.eq('object')
         expect(types.up.category).to.eq('status')
         expect(types.up.shortdesc).to.eq('Up/down')
@@ -49,9 +50,9 @@ utils.setup_context('NS1.Record', function() {
 
   describe('NS1.Record.filtertypes()', function() {
     it('Should return the filtertypes list as JSON', function() {
-      NS1.Record.metatypes().then((types) => {
+      return NS1.Record.filtertypes().then((types) => {
         expect(typeof types).to.eq('object')
-        expect(types.up.inputs).to.eq(["up"])
+        expect(types.up.inputs).to.deep.eq(["up"])
         expect(types.up.shortdesc).to.eq('Removes "down" answers')
       })
     })
