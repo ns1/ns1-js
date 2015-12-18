@@ -28,4 +28,13 @@ utils.setup_context('NS1.Zone', function() {
       })
     })
   })
+
+  describe('NS1.Zone.networks()', function() {
+    it('Should return the available DNS networks', function() {
+      return NS1.Zone.networks().then((networks) => {
+        expect(Array.isArray(networks)).to.eq(true)
+        expect(networks[0]).to.include.keys('network_id', 'label', 'name')
+      })
+    })
+  })
 })
