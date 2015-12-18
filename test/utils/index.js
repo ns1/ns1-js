@@ -37,6 +37,8 @@ module.exports = {
         cb.call(this)
       }
     })
-  }
+  },
+
+  rest_resource_tests: require('./rest_resource_tests')
 
 }

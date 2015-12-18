@@ -28,6 +28,10 @@ module.exports = function (name, force) {
       if (!has_fixtures) {
         let fixtures = nock.recorder.play(),
             text     = "var nock = require('nock')\n" + fixtures.join('\n')
+        
+        nock.restore()
+        nock.recorder.clear()
+
         fs.writeFile(fp, text, done)
       } else {
         done()
