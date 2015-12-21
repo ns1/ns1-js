@@ -1,12 +1,13 @@
 {
-  "name": "nsone-js",
+  "name": "ns1-js",
   "version": "1.0.0",
   "description": "NS1.com JS API",
   "main": "lib/index.js",
   "scripts": {
     "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 babel-node ./node_modules/.bin/babel-istanbul cover ./node_modules/mocha/bin/_mocha -- --full-trace test/**/*_test.js",
     "test-and-record": "NS1_NOCK_RECORD=true npm run test",
-    "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]"
+    "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]",
+    "doc": "rm -rf docs/ && jsdoc lib/**.js -d docs"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "chai": "3.4.1",
     "change-case": "2.3.0",
     "mocha": "2.3.4",
+    "jsdoc": "3.4.0",
     "babel-plugin-transform-es2015-destructuring": "6.3.15"
   }
 }
