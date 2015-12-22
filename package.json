@@ -12,11 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/sankho/nsone-js.git"
+    "url": "git@github.com:ns1/ns1-js.git"
   },
   "author": "",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/sankho/nsone-js#readme",
+  "homepage": "https://github.com/ns1/ns1-js",
   "dependencies": {
     "babel": "6.3.13",
     "babel-cli": "6.3.17",
