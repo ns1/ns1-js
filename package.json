@@ -1,20 +1,22 @@
 {
-  "name": "nsone-js",
+  "name": "ns1-js",
   "version": "1.0.0",
   "description": "NS1.com JS API",
   "main": "lib/index.js",
   "scripts": {
     "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 babel-node ./node_modules/.bin/babel-istanbul cover ./node_modules/mocha/bin/_mocha -- --full-trace test/**/*_test.js",
     "test-and-record": "NS1_NOCK_RECORD=true npm run test",
-    "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]"
+    "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]",
+    "doc": "rm -rf docs/ && jsdoc lib/**.js -d docs",
+    "gh-pages": "npm run doc && git branch -D gh-pages; git checkout --orphan gh-pages && find . -maxdepth 1 ! -name 'docs' ! -name '.*' | xargs rm -rf && mv docs/* . && git add --all . && git commit -am 'documentation' && git push origin gh-pages --force && git checkout develop"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/sankho/nsone-js.git"
+    "url": "git@github.com:ns1/ns1-js.git"
   },
   "author": "",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/sankho/nsone-js#readme",
+  "homepage": "https://github.com/ns1/ns1-js",
   "dependencies": {
     "babel": "6.3.13",
     "babel-cli": "6.3.17",
@@ -30,6 +32,7 @@
     "chai": "3.4.1",
     "change-case": "2.3.0",
     "mocha": "2.3.4",
+    "jsdoc": "3.4.0",
     "babel-plugin-transform-es2015-destructuring": "6.3.15"
   }
 }

@@ -8,7 +8,7 @@ let context_defaults = {
   record: false
 }
 
-if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.Request.get_api_key()) {
+if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.NS1Request.get_api_key()) {
   NS1.set_api_key(process.env.NS1_JS_TEST_API_KEY)
 } else {
   // TODO: Below error should probably come from lib internally.
