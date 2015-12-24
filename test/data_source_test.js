@@ -8,6 +8,7 @@ utils.setup_context('NS1.DataSource', function() {
 
   let data_source_obj
 
+  // TODO: figure out better way to not need extra context below.
   context('Setup recording...', function() { 
     before(function() {
       return new NS1.NS1Request(
