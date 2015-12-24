@@ -33,9 +33,8 @@ module.exports = {
 
       before(recorder.before)
       after(recorder.after)
-      if (typeof cb === 'function') {
-        cb.call(this)
-      }
+
+      context(options.record || !!process.env.NS1_NOCK_RECORD ? 'setting up recorder...' : 'loading recording fixtures...', cb)
     })
   },
 
