@@ -52,6 +52,16 @@ utils.setup_context('NS1.DataSource', function() {
       update_key:     'name'
     })
 
+    describe('.types', function() {
+      it('should return an array of all data types', function() {
+        return NS1.DataSource.types()
+        .then((types) => {
+          expect(typeof types).to.equal('object')
+          expect(types.monitis.shortdesc).to.equal('Monitis Alert Notification')
+        })
+      })
+    })
+
   })
 
 
