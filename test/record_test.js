@@ -5,6 +5,11 @@ let expect = require('chai').expect,
     utils  = require('./utils')
 
 utils.setup_context('NS1.Record', function() {
+
+  let zone_object
+  utils.test_zone_before_and_after.call(this)
+  .then((zone) => { zone_object = zone })
+
   utils.rest_resource_tests.call(this, {
     subject:        NS1.Record,
     existing_val:   'testdomain.test/testdomain.test/NS',

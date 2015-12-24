@@ -80,7 +80,13 @@ module.exports = function(options) {
 
           return object.update(new_update_attrs)
         }).then((new_object) => {
-          expect(new_object).to.deep.equal(object)
+          for (let key in new_object) {
+            let val = new_object[key]
+
+            if (['string', 'number'].indexOf(typeof val) !== -1) {
+              expect(object.attributes[key]).to.eq(val)
+            }
+          }
           expect(new_object.attributes[update_key]).to.eq(update_val)
 
           return subject.find(existing_val)

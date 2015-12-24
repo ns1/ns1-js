@@ -38,6 +38,26 @@ module.exports = {
     })
   },
 
-  rest_resource_tests: require('./rest_resource_tests')
+  rest_resource_tests: require('./rest_resource_tests'),
+
+  test_zone_before_and_after: function() {
+    return new Promise((resolve, reject) => {
+      before(function() {
+        return new NS1.NS1Request(
+          'put',
+          '/zones/testdomain.test',
+          {
+            "zone":   "testdomain.test",
+            "ttl":    3600,
+            "nx_ttl": 60
+          }
+        ).then(resolve)
+      })
+
+      after(function() {
+        return new NS1.NS1Request('del', '/zones/testdomain.test')
+      })
+    })
+  }
 
 }
