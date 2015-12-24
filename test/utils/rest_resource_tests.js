@@ -44,8 +44,12 @@ module.exports = function(options) {
           expect(Array.isArray(object)).to.eq(false)
           expect(object.constructor).to.eq(subject)
           
-          for (var key in existing_obj) {
-            expect(object.attributes[key]).to.eq(existing_obj[key])
+          for (let key in existing_obj) {
+            let val = existing_obj[key]
+
+            if (['string', 'number'].indexOf(typeof val) !== -1) {
+              expect(object.attributes[key]).to.eq(existing_obj[key])
+            }
           }
         })
       })
@@ -100,7 +104,6 @@ module.exports = function(options) {
               expect(object.attributes[key]).to.eq(val)
             }
           }
-
 
           if (!options.skip_find_all) {
             return subject.find()
