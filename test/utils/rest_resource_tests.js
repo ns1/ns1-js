@@ -17,10 +17,19 @@ module.exports = function(options) {
     update_key
   } = options
     
-  let class_name       = `NS1.${options.subject.name}`,
+  let class_name,
       total_objects    = 0
 
   describe('Should behave resoucefully', function() {
+
+    before(() => {
+      if (typeof subject.fn === 'function') subject = subject.fn()
+      if (typeof existing_val === 'function') existing_val = existing_val()
+      if (typeof existing_obj === 'function') existing_obj = existing_obj()
+
+      class_name = subject.name
+    })
+
     describe(`${class_name}.find()`, function() {
 
       if (!options.skip_find_all) {
@@ -36,9 +45,6 @@ module.exports = function(options) {
       }
 
       it (`Should return a single object when an ID is specified`, function() {
-        if (typeof existing_val === 'function') existing_val = existing_val()
-        if (typeof existing_obj === 'function') existing_obj = existing_obj()
-
         return subject.find(existing_val).then((object) => {
           expect(typeof object).to.eq('object')
           expect(Array.isArray(object)).to.eq(false)
@@ -62,16 +68,12 @@ module.exports = function(options) {
       new_update_attrs[update_key] = update_val
 
       after(function() {
-        if (typeof existing_val === 'function') existing_val = existing_val()
-        
-          return subject.find(existing_val).then((object) => {
+        return subject.find(existing_val).then((object) => {
           return object.update(old_update_attrs)
         })
       })
 
       it(`Should update a resource's value`, function() {
-        if (typeof existing_val === 'function') existing_val = existing_val()
-
         let object
 
         return subject.find(existing_val).then((_object) => {
