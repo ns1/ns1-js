@@ -16,6 +16,10 @@ if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.N
   process.exit(1)
 }
 
+if (process.env.NS1_JS_TEST_API_URL && process.env.NS1_JS_TEST_API_URL !== NS1.NS1Request.get_api_url()) {
+  NS1.set_api_url(process.env.NS1_JS_TEST_API_URL)
+}
+
 module.exports = {
 
   setup_context(context_str, options, cb) {
