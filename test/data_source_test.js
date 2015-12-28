@@ -60,6 +60,16 @@ utils.setup_context('NS1.DataSource', function() {
     })
   })
 
-
+  describe.skip('.feed', function() {
+    it('should return a successful response', function() {
+      return NS1.DataSource.find(data_source_obj.id)
+      .then((data_source) => {
+        return data_source.feed({"test_name":{"default":null,"required":true,"validator":"text","shortdesc":"Test Name","type":"text","desc":"The name of the test in Monitor.us that corresponds to this feed"}})
+        .then((response) => {
+          expect(response).to.eq('')
+        })
+      })
+    })
+  })
 
 })
