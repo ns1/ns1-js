@@ -25,6 +25,7 @@ module.exports = function(options) {
     before(() => {
       if (typeof existing_val === 'function') existing_val = existing_val()
       if (typeof existing_obj === 'function') existing_obj = existing_obj()
+      if (typeof new_object_obj === 'function') new_object_obj = new_object_obj()
     })
 
     function object_comparisons(object, orig) {
@@ -99,12 +100,8 @@ module.exports = function(options) {
 
     describe(`${class_name}#save() by way of ${class_name}.create(), then ${class_name}#destroy(), temporary janky testing`, function() {
       it(`Should create a brand new ${class_name}, then destroy it`, function() {
-        let object
-
-        return subject.create(new_object_obj).then((_object) => {
-          object = _object
-          
-          object_comparisons.call(this, new_object_obj, object.attributes)
+        return subject.create(new_object_obj).then((object) => {
+          object_comparisons.call(this, object.attributes, new_object_obj)
 
           if (!options.skip_find_all) {
             return subject.find()

@@ -4,7 +4,7 @@ let expect = require('chai').expect,
     NS1    = require('../lib'),
     utils  = require('./utils')
 
-utils.setup_context('NS1.DataFeed', { record: true }, function() {
+utils.setup_context('NS1.DataFeed', function() {
 
   let data_source_obj,
       data_feed_obj
@@ -61,8 +61,8 @@ utils.setup_context('NS1.DataFeed', { record: true }, function() {
       return {
         data_source_id: data_source_obj.id,
         config: {
-          "alarm_id": "a1AAAAA",
-          "entity_id": "enAAAAA"
+          "alarm_id": "b1BABAB",
+          "entity_id": "enABABA"
         },
         "name": "server.example.com alert 2"
       }
