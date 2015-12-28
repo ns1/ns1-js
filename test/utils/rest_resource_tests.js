@@ -29,7 +29,7 @@ module.exports = function(options) {
 
     function object_comparisons(object, orig) {
       for (let key in orig) {
-        if (object.constructor === NS1.DataFeed && key === 'data_source_id') {
+        if (key === 'data_source_id') {
           break
         }
 
@@ -61,7 +61,7 @@ module.exports = function(options) {
           expect(Array.isArray(object)).to.eq(false)
           expect(object.constructor).to.eq(subject)
           
-          object_comparisons.call(this, object, existing_obj)
+          object_comparisons.call(this, object.attributes, existing_obj)
         })
       })
     })
@@ -87,7 +87,7 @@ module.exports = function(options) {
 
           return object.update(new_update_attrs)
         }).then((new_object) => {
-          object_comparisons.call(this, new_object, object)
+          object_comparisons.call(this, new_object.attributes, object.attributes)
           expect(new_object.attributes[update_key]).to.eq(update_val)
 
           return subject.find(existing_val)
@@ -104,7 +104,7 @@ module.exports = function(options) {
         return subject.create(new_object_obj).then((_object) => {
           object = _object
           
-          object_comparisons.call(this, new_object_obj, object)
+          object_comparisons.call(this, new_object_obj, object.attributes)
 
           if (!options.skip_find_all) {
             return subject.find()
