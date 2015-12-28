@@ -7,8 +7,7 @@ let expect = require('chai').expect,
 utils.setup_context('NS1.DataFeed', { record: true }, function() {
 
   let data_source_obj,
-      data_feed_obj,
-      generated_data_feed_class
+      data_feed_obj
 
   before(function() {
     return new NS1.NS1Request(
@@ -24,8 +23,6 @@ utils.setup_context('NS1.DataFeed', { record: true }, function() {
     ).then((data_source) => {
       data_source_obj = data_source
   
-      generated_data_feed_class = NS1.DataFeed.factory(data_source_obj.id)
-
       return new NS1.NS1Request(
         'put',
         `/data/feeds/${data_source_obj.id}`,
@@ -38,6 +35,7 @@ utils.setup_context('NS1.DataFeed', { record: true }, function() {
         }
       )
     }).then((data_feed) => {
+      data_feed.data_source_id = data_source_obj.id
       data_feed_obj = data_feed
     })
   })
@@ -55,9 +53,9 @@ utils.setup_context('NS1.DataFeed', { record: true }, function() {
   })
 
   utils.rest_resource_tests.call(this, {
-//    subject:        { fn: () => { return NS1.DataFeed.factory(data_source_obj.id) } },
-    subject:        { fn: () => {return generated_data_feed_class} },
-    existing_val:   () => data_feed_obj.id,
+    skip_find_all:  true,
+    subject:        NS1.DataFeed,
+    existing_val:   () => `${data_source_obj.id}/${data_feed_obj.id}`,
     existing_obj:   () => data_feed_obj,
     new_object_obj: () => {
       return {

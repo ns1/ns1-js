@@ -16,19 +16,30 @@ module.exports = function(options) {
     update_val,
     update_key
   } = options
-    
-  let class_name,
-      total_objects    = 0
+
+  let class_name    = subject.name,
+      total_objects = 0
 
   describe('Should behave resoucefully', function() {
 
     before(() => {
-      if (typeof subject.fn === 'function') subject = subject.fn()
       if (typeof existing_val === 'function') existing_val = existing_val()
       if (typeof existing_obj === 'function') existing_obj = existing_obj()
-
-      class_name = subject.name
     })
+
+    function object_comparisons(object, orig) {
+      for (let key in orig) {
+        if (object.constructor === NS1.DataFeed && key === 'data_source_id') {
+          break
+        }
+
+        let val = orig[key]
+
+        if (object[key] !== undefined && ['string', 'number'].indexOf(typeof val) !== -1) {
+          expect(object[key]).to.eq(val)
+        }
+      }
+    }
 
     describe(`${class_name}.find()`, function() {
 
@@ -50,13 +61,7 @@ module.exports = function(options) {
           expect(Array.isArray(object)).to.eq(false)
           expect(object.constructor).to.eq(subject)
           
-          for (let key in existing_obj) {
-            let val = existing_obj[key]
-
-            if (['string', 'number'].indexOf(typeof val) !== -1) {
-              expect(object.attributes[key]).to.eq(existing_obj[key])
-            }
-          }
+          object_comparisons.call(this, object, existing_obj)
         })
       })
     })
@@ -82,13 +87,7 @@ module.exports = function(options) {
 
           return object.update(new_update_attrs)
         }).then((new_object) => {
-          for (let key in new_object) {
-            let val = new_object[key]
-
-            if (['string', 'number'].indexOf(typeof val) !== -1) {
-              expect(object.attributes[key]).to.eq(val)
-            }
-          }
+          object_comparisons.call(this, new_object, object)
           expect(new_object.attributes[update_key]).to.eq(update_val)
 
           return subject.find(existing_val)
@@ -105,13 +104,7 @@ module.exports = function(options) {
         return subject.create(new_object_obj).then((_object) => {
           object = _object
           
-          for (let key in new_object_obj) {
-            let val = new_object_obj[key]
-
-            if (['string', 'number'].indexOf(typeof val) !== -1) {
-              expect(object.attributes[key]).to.eq(val)
-            }
-          }
+          object_comparisons.call(this, new_object_obj, object)
 
           if (!options.skip_find_all) {
             return subject.find()
