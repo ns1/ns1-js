@@ -12,16 +12,36 @@ module.exports = function(options) {
     subject, 
     existing_val, 
     existing_obj,
-    new_object_val,
     new_object_obj,
     update_val,
     update_key
   } = options
-    
-  let class_name       = `NS1.${options.subject.name}`,
-      total_objects    = 0
+
+  let class_name    = subject.name,
+      total_objects = 0
 
   describe('Should behave resoucefully', function() {
+
+    before(() => {
+      if (typeof existing_val === 'function') existing_val = existing_val()
+      if (typeof existing_obj === 'function') existing_obj = existing_obj()
+      if (typeof new_object_obj === 'function') new_object_obj = new_object_obj()
+    })
+
+    function object_comparisons(object, orig) {
+      for (let key in orig) {
+        if (key === 'data_source_id') {
+          break
+        }
+
+        let val = orig[key]
+
+        if (object[key] !== undefined && ['string', 'number'].indexOf(typeof val) !== -1) {
+          expect(object[key]).to.eq(val)
+        }
+      }
+    }
+
     describe(`${class_name}.find()`, function() {
 
       if (!options.skip_find_all) {
@@ -42,9 +62,7 @@ module.exports = function(options) {
           expect(Array.isArray(object)).to.eq(false)
           expect(object.constructor).to.eq(subject)
           
-          for (var key in existing_obj) {
-            expect(object.attributes[key]).to.eq(existing_obj[key])
-          }
+          object_comparisons.call(this, object.attributes, existing_obj)
         })
       })
     })
@@ -70,7 +88,7 @@ module.exports = function(options) {
 
           return object.update(new_update_attrs)
         }).then((new_object) => {
-          expect(new_object).to.deep.equal(object)
+          object_comparisons.call(this, new_object.attributes, object.attributes)
           expect(new_object.attributes[update_key]).to.eq(update_val)
 
           return subject.find(existing_val)
@@ -82,19 +100,8 @@ module.exports = function(options) {
 
     describe(`${class_name}#save() by way of ${class_name}.create(), then ${class_name}#destroy(), temporary janky testing`, function() {
       it(`Should create a brand new ${class_name}, then destroy it`, function() {
-        let object
-
-        return subject.create(new_object_obj).then((_object) => {
-          object = _object
-          
-          for (let key in new_object_obj) {
-            let val = new_object_obj[key]
-
-            if (['string', 'number'].indexOf(typeof val) !== -1) {
-              expect(object.attributes[key]).to.eq(val)
-            }
-          }
-
+        return subject.create(new_object_obj).then((object) => {
+          object_comparisons.call(this, object.attributes, new_object_obj)
 
           if (!options.skip_find_all) {
             return subject.find()
