@@ -2,7 +2,7 @@ var nock = require('nock')
 
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
   .put('/v1/zones/testdomain.test', {"zone":"testdomain.test","ttl":3600,"nx_ttl":60})
-  .reply(200, {"nx_ttl":60,"retry":7200,"zone":"testdomain.test","network_pools":["vagrant"],"primary":{"enabled":false,"secondaries":[]},"refresh":43200,"expiry":1209600,"dns_servers":["dns1.vagrant.nsone.net","dns2.vagrant.nsone.net"],"records":[{"domain":"testdomain.test","short_answers":["dns1.vagrant.nsone.net","dns2.vagrant.nsone.net"],"ttl":60,"tier":1,"type":"NS","id":"5681a3c0830f78046b18df90"}],"meta":{},"link":null,"ttl":3600,"id":"5681a3c0830f78046b18df8d","hostmaster":"hostmaster@nsone.net","networks":[0],"pool":"vagrant"}, { date: 'Mon, 28 Dec 2015 21:04:00 GMT',
+  .reply(200, {"nx_ttl":60,"retry":7200,"zone":"testdomain.test","network_pools":["vagrant"],"primary":{"enabled":false,"secondaries":[]},"refresh":43200,"expiry":1209600,"dns_servers":["dns1.vagrant.nsone.net","dns2.vagrant.nsone.net"],"records":[{"domain":"testdomain.test","short_answers":["dns1.vagrant.nsone.net","dns2.vagrant.nsone.net"],"ttl":60,"tier":1,"type":"NS","id":"568afc22830f780493f5f045"}],"meta":{},"link":null,"ttl":3600,"id":"568afc22830f780493f5f042","hostmaster":"hostmaster@nsone.net","networks":[0],"pool":"vagrant"}, { date: 'Mon, 04 Jan 2016 23:11:30 GMT',
   'content-type': 'application/json',
   'content-length': '528',
   connection: 'close',
@@ -19,7 +19,7 @@ nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
   .get('/v1/search')
   .query({"q":"testdomain.test"})
-  .reply(200, [{"zone":"testdomain.test"},{"domain":"testdomain.test","type":"NS","zone":"testdomain.test"}], { date: 'Mon, 28 Dec 2015 21:04:00 GMT',
+  .reply(200, [{"zone":"testdomain.test"},{"domain":"testdomain.test","type":"NS","zone":"testdomain.test"}], { date: 'Mon, 04 Jan 2016 23:11:30 GMT',
   'content-type': 'application/json',
   'content-length': '95',
   connection: 'close',
@@ -37,7 +37,7 @@ nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
   .get('/v1/search')
   .query({"q":"testdomain.test","type":"record"})
-  .reply(200, [{"domain":"testdomain.test","type":"NS","zone":"testdomain.test"}], { date: 'Mon, 28 Dec 2015 21:04:00 GMT',
+  .reply(200, [{"domain":"testdomain.test","type":"NS","zone":"testdomain.test"}], { date: 'Mon, 04 Jan 2016 23:11:30 GMT',
   'content-type': 'application/json',
   'content-length': '68',
   connection: 'close',
@@ -55,7 +55,7 @@ nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
   .get('/v1/search')
   .query({"q":"testdomain.test","type":"zone"})
-  .reply(200, [{"zone":"testdomain.test"}], { date: 'Mon, 28 Dec 2015 21:04:00 GMT',
+  .reply(200, [{"zone":"testdomain.test"}], { date: 'Mon, 04 Jan 2016 23:11:30 GMT',
   'content-type': 'application/json',
   'content-length': '29',
   connection: 'close',
@@ -73,7 +73,7 @@ nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
   .get('/v1/search')
   .query({"q":"testdomain.test","max":"1"})
-  .reply(200, [{"zone":"testdomain.test"}], { date: 'Mon, 28 Dec 2015 21:04:00 GMT',
+  .reply(200, [{"zone":"testdomain.test"}], { date: 'Mon, 04 Jan 2016 23:11:30 GMT',
   'content-type': 'application/json',
   'content-length': '29',
   connection: 'close',
@@ -90,7 +90,7 @@ nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
 
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
   .delete('/v1/zones/testdomain.test')
-  .reply(200, {}, { date: 'Mon, 28 Dec 2015 21:04:01 GMT',
+  .reply(200, {}, { date: 'Mon, 04 Jan 2016 23:11:30 GMT',
   'content-type': 'application/json',
   'content-length': '3',
   connection: 'close',
