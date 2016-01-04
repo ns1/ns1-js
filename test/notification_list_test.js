@@ -59,7 +59,7 @@ utils.setup_context('NS1.NotificationList', function() {
 
   describe('.types', function() {
     it('should return all notify_list types', function() {
-      NS1.NotificationList.types((types) => {
+      return NS1.NotificationList.types((types) => {
         expect(Array.isArray(types)).to.eq(false)
         expect(types.email.desc).to.eq('Send notification to an email address.')
         expect(typeof types).to.eq('object')

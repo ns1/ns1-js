@@ -96,4 +96,15 @@ utils.setup_context('NS1.Monitor', {record:true}, function() {
     update_key:     'name'
   })
 
+  describe('#history', function() {
+    it('Should return an array of historical info', function() {
+      return NS1.Monitor.find(existing_obj.id).then((obj) => {
+        return obj.history().then((history) => {
+          expect(Array.isArray(history)).to.eq(true)
+          expect(history[0].job).to.eq(existing_obj.id)
+        })
+      })
+    })
+  })
+
 })
