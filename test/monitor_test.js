@@ -98,11 +98,43 @@ utils.setup_context('NS1.Monitor', {record:true}, function() {
 
   describe('#history', function() {
     it('Should return an array of historical info', function() {
-      return NS1.Monitor.find(existing_obj.id).then((obj) => {
-        return obj.history().then((history) => {
-          expect(Array.isArray(history)).to.eq(true)
-          expect(history[0].job).to.eq(existing_obj.id)
-        })
+      return NS1.Monitor.find(existing_obj.id)
+      .then((obj) => {
+        return obj.history({ period: "30d" })
+      }).then((history) => {
+        expect(Array.isArray(history)).to.eq(true)
+        expect(history[0].job).to.eq(existing_obj.id)
+      })
+    })
+  })
+
+  describe('#metrics', function() {
+    it('Should return metric info for the monitoring job', function() {
+      return NS1.Monitor.find(existing_obj.id)
+      .then((obj) => {
+        return obj.metrics()
+      }).then((metrics) => {
+        expect(Array.isArray(metrics)).to.eq(true)
+      })
+    })
+  })
+
+  describe('.jobtypes', function() {
+    it('Should return job types', function() {
+      return NS1.Monitor.jobtypes()
+      .then((jobtypes) => {
+        expect(typeof jobtypes).to.eq('object')
+        expect(jobtypes.tcp.desc).to.eq('Connect to a TCP port on a host.')
+      })
+    })
+  })
+
+  describe('.regions', function() {
+    it('Should return all usable monitoring regions', function() {
+      return NS1.Monitor.regions()
+      .then((regions) => {
+        expect(Array.isArray(regions)).to.eq(true)
+        expect(regions[0].code).to.eq('master')
       })
     })
   })
