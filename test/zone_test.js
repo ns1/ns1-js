@@ -40,4 +40,31 @@ utils.setup_context('NS1.Zone', function() {
       })
     })
   })
+
+  describe('#usage', function() {
+    it('Should return zone usage stats', function() {
+      return NS1.Zone.find(zone_object.zone)
+      .then((zone) => {
+        return zone.usage()
+      }).then((stats) => {
+        expect(Array.isArray(stats)).to.eq(true)
+        expect(typeof stats[0].records).to.eq('number')
+        expect(stats[0].records).to.eq(1)
+      })
+    })
+  })
+
+  describe('#stats', function() {
+    it('Should return record usage stats', function() {
+      return NS1.Zone.find(zone_object.zone)
+      .then((zone) => {
+        return zone.qps()
+      }).then((stats) => {
+        expect(typeof stats).to.eq('object')
+        expect(typeof stats.qps).to.eq('number')
+        expect(stats.qps).to.eq(0)
+      })
+    })
+  })
+
 })

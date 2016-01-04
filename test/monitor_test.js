@@ -4,7 +4,7 @@ let expect = require('chai').expect,
     NS1    = require('../lib'),
     utils  = require('./utils')
 
-utils.setup_context('NS1.Monitor', {record:true}, function() {
+utils.setup_context('NS1.Monitor', function() {
 
   let existing_obj, list
   let existing_obj_attrs = {
