@@ -1,5 +1,5 @@
 {
-  "name": "ns1-js",
+  "name": "ns1",
   "version": "1.0.0",
   "description": "NS1.com JS API",
   "main": "lib/index.js",
@@ -7,7 +7,7 @@
     "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 babel-node ./node_modules/.bin/babel-istanbul cover ./node_modules/mocha/bin/_mocha -- --full-trace test/**/*_test.js",
     "test-and-record": "NS1_NOCK_RECORD=true npm run test",
     "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]",
-    "doc": "rm -rf docs/ && jsdoc lib/**.js -d docs",
+    "doc": "rm -rf docs/ && jsdoc lib/**.js README.md -d docs",
     "gh-pages": "npm run doc && git branch -D gh-pages; git checkout --orphan gh-pages && find . -maxdepth 1 ! -name 'docs' ! -name '.*' | xargs rm -rf && mv docs/* . && git add --all . && git commit -am 'documentation' && git push origin gh-pages --force && git checkout develop"
   },
   "repository": {
