@@ -1,33 +1,184 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.NS1API = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (global){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var NS1 = (function () {
-  function NS1() {
-    _classCallCheck(this, NS1);
+var superagent = require('superagent');
+
+var api_key = undefined,
+    api_url = 'https://api.nsone.net/v1/';
+
+/** 
+ * Class representing all HTTP requests to the NS1 API. Uses the superagent
+ * lib to be cross compatible w/ Node.js and Browser based environment.
+ * @memberof NS1
+ */
+
+var NS1Request = (function () {
+
+  /**
+   * Creates a request and returns a promise object for that request.
+   * @param {String} method - The HTTP verb to use in this request e.g. get, post, etc. Must be lower case.
+   * @param {String} uri    - The URI to query against the base API URL
+   * @param {Object} query  - Any parameters to be sent in the query string for GET requests or in the req body for others
+   * @param {Object} files  - Key / value mapped object containing file paths for uploads.
+   * @return {Promise} an ES2015 promise w/ then and catch methods for continuation handling.
+   */
+
+  function NS1Request(method, uri, query, files) {
+    _classCallCheck(this, NS1Request);
+
+    if (uri[0] === '/') {
+      uri = uri.substring(1);
+    }
+
+    this.method = method;
+    this.uri = uri;
+    this.is_json_response = true; // flag to adjust later on when dealing with binary file responses
+
+    this.request = superagent[method].apply(superagent, ['' + api_url + uri]).set('X-NSONE-Key', api_key).set('X-NSONE-Js-Api', require('../package.json').version);
+
+    apply_data.call(this, query, files);
+    return create_promise.call(this);
   }
 
-  _createClass(NS1, null, [{
-    key: "setApiKey",
-    value: function setApiKey(key) {
-      global.__NS1_API_KEY__ = key;
+  /**
+   * Returns the current API key being used by the class.
+   * @return {String} The API key
+   */
+
+  _createClass(NS1Request, null, [{
+    key: 'get_api_key',
+    value: function get_api_key() {
+      return api_key;
+    }
+
+    /**
+     * Sets the API key used by the class.
+     * @param {String} key - The API key supplied by the user
+     */
+
+  }, {
+    key: 'set_api_key',
+    value: function set_api_key(key) {
+      api_key = key;
+    }
+
+    /**
+     * Returns the current API url base being used.
+     * @return {String} The API url
+     */
+
+  }, {
+    key: 'get_api_url',
+    value: function get_api_url() {
+      return api_url;
+    }
+
+    /**
+     * Sets the API url used by the class.
+     * @param {String} root - The URL to set as the base for API calls
+     */
+
+  }, {
+    key: 'set_api_url',
+    value: function set_api_url(root) {
+      if (root[root.length - 1] !== '/') {
+        root = root + '/';
+      }
+      api_url = root;
     }
   }]);
 
-  return NS1;
+  return NS1Request;
 })();
 
-NS1.Zone = require('./resources/zone');
+/**
+ * Applies data to the this.request superagent object. Works with query params or
+ * file attachments.
+ *
+ * @param {Object} query  - Any parameters to be sent in the query string for GET requests or in the req body for others
+ * @param {Object} files  - Key / value mapped object containing file paths for uploads.
+ * @private
+ */
 
-module.exports = NS1;
+function apply_data(query, files) {
+  if (query !== undefined) {
+    if (this.method === 'get') {
+      this.request = this.request.query(query);
+    } else {
+      this.request = this.request.send(query);
+    }
+  }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./resources/zone":2}],2:[function(require,module,exports){
+  if (files !== undefined) {
+    for (var key in files) {
+      this.request = this.request.attach(key, files[key]);
+    }
+  }
+}
+
+/**
+ * Creates an ES2015 Promise which parses the message internally as JSON and
+ * returns it as the resolve() method's sole argument.
+ *
+ * @return {Promise}
+ * @private
+ */
+function create_promise() {
+  var _this = this;
+
+  return new Promise(function (resolve, reject) {
+    _this.request.end(function (err, response) {
+      if (err) throw handle_error.call(_this, err, response);
+
+      if (_this.is_json_response && _this.method != 'del' && response.text !== '') {
+        try {
+          var parsed = JSON.parse(response.text);
+        } catch (parse_err) {
+          throw new Error('NS1 API Response couldn\'t parse as JSON: ' + parse_err);
+        }
+      } else {
+        // TODO: Determine if there's a need to filter/reject empty response bodies on 200's
+      }
+
+      return resolve(parsed || true);
+    });
+  });
+}
+
+/**
+ * Handles error messaging. Some errors will come back as JSON w/ the error details
+ * in the message field of the returning object. Other times JSOn won't be able to parse.
+ * This should return an appropriate JS Error object w/ the right message.
+ *
+ * @param {Error} err
+ * @param {String} response
+ * @return {Error}
+ * @private
+ */
+function handle_error(err, response) {
+  if (response && response.text) {
+    var final_message = undefined;
+    try {
+      final_message = JSON.parse(response.text).message;
+    } catch (e) {
+      final_message = response.text;
+    }
+    return new Error('NS1 API Request Failed on \n ' + this.method.toUpperCase() + ' ' + api_url + this.uri + ' \n ' + final_message + ' \n');
+  } else {
+    return new Error('NS1 API Request Failed on \n ' + this.method.toUpperCase() + ' ' + api_url + this.uri + ' \n ' + err.message + ' \n');
+  }
+}
+
+module.exports = NS1Request;
+
+},{"../package.json":22,"superagent":21}],2:[function(require,module,exports){
 "use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -35,9 +186,1208 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var RestResource = require('../rest_resource');
+var NS1Request = require('../NS1_request'),
+    RestResource = require('../rest_resource');
 
-var RESOURCE_NAME = 'zones';
+var ApiKey = (function (_RestResource) {
+  _inherits(ApiKey, _RestResource);
+
+  function ApiKey() {
+    _classCallCheck(this, ApiKey);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(ApiKey).apply(this, arguments));
+  }
+
+  _createClass(ApiKey, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.get_resource_path();
+    }
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'account/apikeys';
+    }
+  }]);
+
+  return ApiKey;
+})(RestResource);
+
+module.exports = ApiKey;
+
+},{"../NS1_request":1,"../rest_resource":14}],3:[function(require,module,exports){
+"use strict";
+
+var NS1Request = require('../NS1_request'),
+    PaymentMethod = require('./payment_method'),
+    User = require('./user'),
+    ApiKey = require('./api_key'),
+    Team = require('./team');
+
+var Account = {
+
+  PaymentMethod: PaymentMethod,
+  User: User,
+  ApiKey: ApiKey,
+  Team: Team,
+
+  settings: function settings(changes) {
+    return post_changes_or_get_results.call(this, '/account/settings', changes);
+  },
+  usage_warnings: function usage_warnings(changes) {
+    return post_changes_or_get_results.call(this, '/account/usagewarnings', changes);
+  },
+  plan_types: function plan_types() {
+    return new NS1Request('get', '/account/plantypes');
+  },
+  plan: function plan(changes) {
+    return post_changes_or_get_results.call(this, '/account/plan', changes);
+  },
+  invoice: function invoice(id) {
+    if (id) {
+      return new NS1Request('get', '/account/invoices/' + id);
+    } else {
+      return new NS1Request('get', '/account/invoices');
+    }
+  },
+  invoices: function invoices() {
+    return this.invoice();
+  },
+  bill_at_a_glance: function bill_at_a_glance() {
+    return new NS1Request('get', '/account/billataglance');
+  },
+  activity: function activity() {
+    return new NS1Request('get', '/account/activity');
+  }
+};
+
+function post_changes_or_get_results(uri, changes) {
+  if (changes) {
+    return new NS1Request('post', uri, changes);
+  } else {
+    return new NS1Request('get', uri);
+  }
+}
+
+module.exports = Account;
+
+},{"../NS1_request":1,"./api_key":2,"./payment_method":4,"./team":5,"./user":6}],4:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var NS1Request = require('../NS1_request'),
+    RestResource = require('../rest_resource');
+
+var PaymentMethod = (function (_RestResource) {
+  _inherits(PaymentMethod, _RestResource);
+
+  function PaymentMethod() {
+    _classCallCheck(this, PaymentMethod);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(PaymentMethod).apply(this, arguments));
+  }
+
+  _createClass(PaymentMethod, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.constructor.get_base_path();
+    }
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'account/paymentmethods';
+    }
+  }]);
+
+  return PaymentMethod;
+})(RestResource);
+
+module.exports = PaymentMethod;
+
+},{"../NS1_request":1,"../rest_resource":14}],5:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var NS1Request = require('../NS1_request'),
+    RestResource = require('../rest_resource');
+
+var Team = (function (_RestResource) {
+  _inherits(Team, _RestResource);
+
+  function Team() {
+    _classCallCheck(this, Team);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(Team).apply(this, arguments));
+  }
+
+  _createClass(Team, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.get_resource_path();
+    }
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'account/teams';
+    }
+  }]);
+
+  return Team;
+})(RestResource);
+
+module.exports = Team;
+
+},{"../NS1_request":1,"../rest_resource":14}],6:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var NS1Request = require('../NS1_request'),
+    RestResource = require('../rest_resource');
+
+var User = (function (_RestResource) {
+  _inherits(User, _RestResource);
+
+  function User() {
+    _classCallCheck(this, User);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(User).apply(this, arguments));
+  }
+
+  _createClass(User, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.username;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.get_resource_path();
+    }
+  }, {
+    key: 'reinvite',
+    value: function reinvite() {
+      return new NS1Request('post', '/account/reinvite/' + this.attributes.username);
+    }
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'account/users';
+    }
+  }]);
+
+  return User;
+})(RestResource);
+
+module.exports = User;
+
+},{"../NS1_request":1,"../rest_resource":14}],7:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var RestResource = require('./rest_resource');
+var NS1Request = require('./ns1_request');
+
+/**
+ * Class representing data sources in NS1.
+ *
+ * @extends RestResource
+ * @memberof NS1
+ */
+
+var DataFeed = (function (_RestResource) {
+  _inherits(DataFeed, _RestResource);
+
+  function DataFeed(attributes, from_server) {
+    _classCallCheck(this, DataFeed);
+
+    var data_source_id = attributes.data_source_id;
+    delete attributes.data_source_id;
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DataFeed).call(this, attributes, from_server));
+
+    _this.data_source_id = data_source_id;
+    return _this;
+  }
+
+  _createClass(DataFeed, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.data_source_id + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.data_source_id;
+    }
+  }, {
+    key: 'save',
+    value: function save() {
+      var _this2 = this;
+
+      var data_source_id = this.data_source_id;
+      return new Promise(function (resolve, reject) {
+        return _get(Object.getPrototypeOf(DataFeed.prototype), 'save', _this2).call(_this2).then(function (results) {
+          resolve(_this2.constructor.add_data_source_to_objects(results, data_source_id));
+        });
+      });
+    }
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'data/feeds';
+    }
+  }, {
+    key: 'find',
+    value: function find(id) {
+      var _this3 = this;
+
+      var data_source_id = id.split('/')[0];
+      return new Promise(function (resolve, reject) {
+        return _get(Object.getPrototypeOf(DataFeed), 'find', _this3).call(_this3, id).then(function (results) {
+          resolve(_this3.add_data_source_to_objects(results, data_source_id));
+        });
+      });
+    }
+  }, {
+    key: 'add_data_source_to_objects',
+    value: function add_data_source_to_objects(data, data_source_id) {
+      if (Array.isArray(data)) {
+        return data.map(function (item, index, arr) {
+          item.data_source_id = data_source_id;
+          return item;
+        });
+      } else {
+        data.data_source_id = data_source_id;
+        return data;
+      }
+    }
+  }]);
+
+  return DataFeed;
+})(RestResource);
+
+module.exports = DataFeed;
+
+},{"./ns1_request":12,"./rest_resource":14}],8:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var RestResource = require('./rest_resource');
+var NS1Request = require('./ns1_request');
+
+/**
+ * Class representing data sources in NS1.
+ *
+ * @extends RestResource
+ * @memberof NS1
+ */
+
+var DataSource = (function (_RestResource) {
+  _inherits(DataSource, _RestResource);
+
+  function DataSource() {
+    _classCallCheck(this, DataSource);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(DataSource).apply(this, arguments));
+  }
+
+  _createClass(DataSource, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.constructor.get_base_path();
+    }
+  }, {
+    key: 'feed',
+
+    /**
+     * Manually send data to your data source with this method.
+     *
+     * @param {Object} contents
+     * @param {String} method (defaults to post)
+     * @return {Promise}
+     */
+    value: function feed(contents, method) {
+      method = method || 'post';
+      return new NS1Request(method, '/feed/' + this.attributes.id, contents);
+    }
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'data/sources';
+    }
+  }, {
+    key: 'types',
+    value: function types() {
+      return new NS1Request('get', '/data/sourcetypes');
+    }
+  }]);
+
+  return DataSource;
+})(RestResource);
+
+module.exports = DataSource;
+
+},{"./ns1_request":12,"./rest_resource":14}],9:[function(require,module,exports){
+"use strict";
+
+/**
+ * Base NS1 Module.
+ * @namespace NS1
+ */
+
+var NS1 = {
+  // base resources
+  Zone: require('./zone'),
+  Record: require('./record'),
+  DataSource: require('./data_source'),
+  DataFeed: require('./data_feed'),
+  Monitor: require('./monitor'),
+  NotificationList: require('./notification_list'),
+  Stats: require('./stats'),
+  Account: require('./account'),
+
+  // helper classes
+  NS1Request: require('./ns1_request'),
+  Search: require('./search'),
+
+  // convenience methods
+  set_api_key: function set_api_key(key) {
+    return NS1.NS1Request.set_api_key(key);
+  },
+  set_api_url: function set_api_url(url) {
+    return NS1.NS1Request.set_api_url(url);
+  }
+};
+
+module.exports = NS1;
+
+},{"./account":3,"./data_feed":7,"./data_source":8,"./monitor":10,"./notification_list":11,"./ns1_request":12,"./record":13,"./search":15,"./stats":16,"./zone":17}],10:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var RestResource = require('./rest_resource');
+var NS1Request = require('./ns1_request');
+
+/**
+ * Class representing monitors / monitoring jobs in NS1.
+ *
+ * @extends RestResource
+ * @memberof NS1
+ */
+
+var Monitor = (function (_RestResource) {
+  _inherits(Monitor, _RestResource);
+
+  function Monitor() {
+    _classCallCheck(this, Monitor);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(Monitor).apply(this, arguments));
+  }
+
+  _createClass(Monitor, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.constructor.get_base_path();
+    }
+
+    /**
+     * Returns history of monitor object.
+     *
+     * @param {Object} args - Arguments to be supplied to refine the request, see https://ns1.com/api/#history-get for details
+     * @returns Promise
+     */
+
+  }, {
+    key: 'history',
+    value: function history(args) {
+      return new NS1Request('get', '/monitoring/history/' + this.attributes.id, args);
+    }
+
+    /**
+     * Returns metrics of monitor object.
+     *
+     * @param {Object} args - Arguments to be supplied to refine the request, see https://ns1.com/api/#metrics-get for details
+     * @returns Promise
+     */
+
+  }, {
+    key: 'metrics',
+    value: function metrics(args) {
+      return new NS1Request('get', '/monitoring/metrics/' + this.attributes.id, args);
+    }
+
+    /**
+     * Returns job types xxxf Monitor.
+     *
+     * @returns Promise
+     */
+
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'monitoring/jobs';
+    }
+  }, {
+    key: 'jobtypes',
+    value: function jobtypes() {
+      return new NS1Request('get', '/monitoring/jobtypes');
+    }
+
+    /**
+     * Returns region keys available to Monitors.
+     *
+     * @returns Promise
+     */
+
+  }, {
+    key: 'regions',
+    value: function regions() {
+      return new NS1Request('get', '/monitoring/regions');
+    }
+  }]);
+
+  return Monitor;
+})(RestResource);
+
+module.exports = Monitor;
+
+},{"./ns1_request":12,"./rest_resource":14}],11:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var RestResource = require('./rest_resource');
+var NS1Request = require('./ns1_request');
+
+/**
+ * Class representing Notification Lists in NS1
+ *
+ * @extends RestResource
+ * @memberof NS1
+ */
+
+var NotificationList = (function (_RestResource) {
+  _inherits(NotificationList, _RestResource);
+
+  function NotificationList() {
+    _classCallCheck(this, NotificationList);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(NotificationList).apply(this, arguments));
+  }
+
+  _createClass(NotificationList, [{
+    key: 'get_resource_path',
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.id;
+    }
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.constructor.get_base_path();
+    }
+
+    /**
+     * Returns the different notifier types (e.g. Email, slack, etc)
+     *
+     * @returns Promise
+     */
+
+  }], [{
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return 'lists';
+    }
+  }, {
+    key: 'types',
+    value: function types() {
+      return new NS1Request('get', '/notifytypes');
+    }
+  }]);
+
+  return NotificationList;
+})(RestResource);
+
+module.exports = NotificationList;
+
+},{"./ns1_request":12,"./rest_resource":14}],12:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var superagent = require('superagent');
+
+var api_key = undefined,
+    api_url = 'https://api.nsone.net/v1/';
+
+/** 
+ * Class representing all HTTP requests to the NS1 API. Uses the superagent
+ * lib to be cross compatible w/ Node.js and Browser based environment.
+ * @memberof NS1
+ */
+
+var NS1Request = (function () {
+
+  /**
+   * Creates a request and returns a promise object for that request.
+   * @param {String} method - The HTTP verb to use in this request e.g. get, post, etc. Must be lower case.
+   * @param {String} uri    - The URI to query against the base API URL
+   * @param {Object} query  - Any parameters to be sent in the query string for GET requests or in the req body for others
+   * @param {Object} files  - Key / value mapped object containing file paths for uploads.
+   * @return {Promise} an ES2015 promise w/ then and catch methods for continuation handling.
+   */
+
+  function NS1Request(method, uri, query, files) {
+    _classCallCheck(this, NS1Request);
+
+    if (uri[0] === '/') {
+      uri = uri.substring(1);
+    }
+
+    this.method = method;
+    this.uri = uri;
+    this.is_json_response = true; // flag to adjust later on when dealing with binary file responses
+
+    this.request = superagent[method].apply(superagent, ['' + api_url + uri]).set('X-NSONE-Key', api_key).set('X-NSONE-Js-Api', require('../package.json').version);
+
+    apply_data.call(this, query, files);
+    return create_promise.call(this);
+  }
+
+  /**
+   * Returns the current API key being used by the class.
+   * @return {String} The API key
+   */
+
+  _createClass(NS1Request, null, [{
+    key: 'get_api_key',
+    value: function get_api_key() {
+      return api_key;
+    }
+
+    /**
+     * Sets the API key used by the class.
+     * @param {String} key - The API key supplied by the user
+     */
+
+  }, {
+    key: 'set_api_key',
+    value: function set_api_key(key) {
+      api_key = key;
+    }
+
+    /**
+     * Returns the current API url base being used.
+     * @return {String} The API url
+     */
+
+  }, {
+    key: 'get_api_url',
+    value: function get_api_url() {
+      return api_url;
+    }
+
+    /**
+     * Sets the API url used by the class.
+     * @param {String} root - The URL to set as the base for API calls
+     */
+
+  }, {
+    key: 'set_api_url',
+    value: function set_api_url(root) {
+      if (root[root.length - 1] !== '/') {
+        root = root + '/';
+      }
+      api_url = root;
+    }
+  }]);
+
+  return NS1Request;
+})();
+
+/**
+ * Applies data to the this.request superagent object. Works with query params or
+ * file attachments.
+ *
+ * @param {Object} query  - Any parameters to be sent in the query string for GET requests or in the req body for others
+ * @param {Object} files  - Key / value mapped object containing file paths for uploads.
+ * @private
+ */
+
+function apply_data(query, files) {
+  if (query !== undefined) {
+    if (this.method === 'get') {
+      this.request = this.request.query(query);
+    } else {
+      this.request = this.request.send(query);
+    }
+  }
+
+  if (files !== undefined) {
+    for (var key in files) {
+      this.request = this.request.attach(key, files[key]);
+    }
+  }
+}
+
+/**
+ * Creates an ES2015 Promise which parses the message internally as JSON and
+ * returns it as the resolve() method's sole argument.
+ *
+ * @return {Promise}
+ * @private
+ */
+function create_promise() {
+  var _this = this;
+
+  return new Promise(function (resolve, reject) {
+    _this.request.end(function (err, response) {
+      if (err) throw handle_error.call(_this, err, response);
+
+      if (_this.is_json_response && _this.method != 'del' && response.text !== '') {
+        try {
+          var parsed = JSON.parse(response.text);
+        } catch (parse_err) {
+          throw new Error('NS1 API Response couldn\'t parse as JSON: ' + parse_err);
+        }
+      } else {
+        // TODO: Determine if there's a need to filter/reject empty response bodies on 200's
+      }
+
+      return resolve(parsed || true);
+    });
+  });
+}
+
+/**
+ * Handles error messaging. Some errors will come back as JSON w/ the error details
+ * in the message field of the returning object. Other times JSOn won't be able to parse.
+ * This should return an appropriate JS Error object w/ the right message.
+ *
+ * @param {Error} err
+ * @param {String} response
+ * @return {Error}
+ * @private
+ */
+function handle_error(err, response) {
+  if (response && response.text) {
+    var final_message = undefined;
+    try {
+      final_message = JSON.parse(response.text).message;
+    } catch (e) {
+      final_message = response.text;
+    }
+    return new Error('NS1 API Request Failed on \n ' + this.method.toUpperCase() + ' ' + api_url + this.uri + ' \n ' + final_message + ' \n');
+  } else {
+    return new Error('NS1 API Request Failed on \n ' + this.method.toUpperCase() + ' ' + api_url + this.uri + ' \n ' + err.message + ' \n');
+  }
+}
+
+module.exports = NS1Request;
+
+},{"../package.json":22,"superagent":21}],13:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var RestResource = require('./rest_resource');
+var NS1Request = require('./ns1_request');
+var Stats = require('./stats');
+
+/**
+ * Class representing all "records" in NS1.
+ *
+ * @extends RestResource
+ * @memberof NS1
+ */
+
+var Record = (function (_RestResource) {
+  _inherits(Record, _RestResource);
+
+  function Record() {
+    _classCallCheck(this, Record);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(Record).apply(this, arguments));
+  }
+
+  _createClass(Record, [{
+    key: 'get_resource_path',
+
+    /**
+     * Defines the resource path w/ necessary zone information to succesfully GET the resource. Used
+     * internally.
+     *
+     * @return {String}
+     */
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.zone + '/' + this.attributes.domain + '/' + this.attributes.type;
+    }
+
+    /**
+     * Throws an error if an ID isn't supplied, informs the user to get records through a Zone object if they want a list.
+     * 
+     * @param {String} id
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'qps',
+
+    /**
+     * Returns the Queries Per Second statistics of a single record
+     *
+     * @return {Promise}
+     */
+    value: function qps() {
+      return Stats.qps(this.attributes.zone + '/' + this.attributes.domain + '/' + this.attributes.type);
+    }
+
+    /**
+     * Returns usage statistics on a single record
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'usage',
+    value: function usage() {
+      return Stats.usage(this.attributes.zone + '/' + this.attributes.domain + '/' + this.attributes.type);
+    }
+  }], [{
+    key: 'get_base_path',
+
+    /**
+     * Defines the base path as just "zones/", all other info is derided from actual record object
+     * itself.
+     *
+     * @return {String}
+     */
+    value: function get_base_path() {
+      return 'zones';
+    }
+  }, {
+    key: 'find',
+    value: function find(id) {
+      if (id === undefined) {
+        throw new Error("Records can only be listed through a Zone, try new NS1.Zone(zone.name).attributes.records");
+      } else {
+        return _get(Object.getPrototypeOf(Record), 'find', this).apply(this, arguments);
+      }
+    }
+
+    /**
+     * Returns all the acceptable metadata keys for records.
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'metatypes',
+    value: function metatypes() {
+      return new NS1Request('get', '/metatypes');
+    }
+
+    /**
+     * Returns all the acceptable filter types on a record's filter chain.
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'filtertypes',
+    value: function filtertypes() {
+      return new NS1Request('get', '/filtertypes');
+    }
+  }]);
+
+  return Record;
+})(RestResource);
+
+module.exports = Record;
+
+},{"./ns1_request":12,"./rest_resource":14,"./stats":16}],14:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var NS1Request = require('./ns1_request'),
+    pluralize = require('pluralize');
+
+/**
+ * Parent class for all resourceful objects. Grants basic REST backed resource
+ * object methods and behaviors, e.g. new Object({ object_vars }).save, Object.create,
+ * #destroy and #update methods.
+ */
+
+var RestResource = (function () {
+
+  /**
+   * @param {Object} attributes   - The attributes representing a new object
+   * @param {Boolean} from_server - Used internally to know if an object exists on the server
+   */
+
+  function RestResource(attributes, from_server) {
+    _classCallCheck(this, RestResource);
+
+    this.attributes = attributes || {};
+    this.from_server = from_server;
+  }
+
+  /**
+   * Updates an object w/ the provided attributes.
+   *
+   * @param {Object} attributes
+   * @return {Promise}
+   */
+
+  _createClass(RestResource, [{
+    key: 'update',
+    value: function update(attributes) {
+      this.attributes = Object.assign({}, this.attributes, attributes);
+      return this.save();
+    }
+
+    /**
+     * Saves an object on the server.
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'save',
+    value: function save() {
+      var _this = this;
+
+      return new Promise(function (resolve, reject) {
+        var method = _this.from_server ? 'post' : 'put',
+            uri = _this.from_server ? _this.get_resource_path() : _this.create_resource_path();
+
+        new NS1Request(method, uri, _this.attributes).then(function (response) {
+          resolve(convert_json_to_objects.bind(_this.constructor)(response));
+        });
+      });
+    }
+
+    /**
+     * Destroys an object on the server w/ the delete HTTP verb.
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        new NS1Request('del', _this2.get_resource_path()).then(function (response) {
+          resolve(response);
+        });
+      });
+    }
+
+    /**
+     * Creates a new object w/ the provided attributes.
+     *
+     * @param {Object} attributes
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'get_resource_path',
+
+    /**
+     * Defines the path to posting changes & getting details on a single resource. Method is
+     * required to be overriden within child classes as most paths will require info pertaining
+     * to the individual resource's attributes.
+     *
+     * @return {String}
+     */
+    value: function get_resource_path() {
+      throw new Error('NS1 JS API: NS1.' + this.constructor.name + '.get_resource_path() requires a definition');
+    }
+
+    /**
+     * Overrideable method to provide non-standard "PUT" behavior on creating new records.
+     * E.g. Zones require info in the URI where Data Sources don't.
+     *
+     * @return {String}
+     */
+
+  }, {
+    key: 'create_resource_path',
+    value: function create_resource_path() {
+      return this.get_resource_path();
+    }
+
+    /**
+     * Finds either all the relevant resources when not given any arguments (e.g. finds all Zones in an account)
+     * but when supplied an identifier will only return that single resource (e.g. /zones/testdomain.test will
+     * only return info pertaining to the zone testdomain.test)
+     *
+     * @param {String} uid - String identifier of the object which is conjoined with the base_path of the resource
+     * @return {Promise}
+     */
+
+  }], [{
+    key: 'create',
+    value: function create(attributes) {
+      return new this(attributes).save();
+    }
+
+    /**
+     * Defines the default path for the resource, e.g. zones == '/zones'. Default behavior is the to take
+     * the class's name, lower case it, and pluralize it. Overrideable in child classes.
+     *
+     * @return {String}
+     */
+
+  }, {
+    key: 'get_base_path',
+    value: function get_base_path() {
+      return pluralize(this.name.toLowerCase());
+    }
+  }, {
+    key: 'find',
+    value: function find(uid) {
+      var _this3 = this;
+
+      var resource_uri = this.get_base_path();
+
+      if (uid !== undefined) {
+        resource_uri += '/' + uid;
+      }
+
+      return new Promise(function (resolve, reject) {
+        new NS1Request('get', resource_uri).then(function (response) {
+          resolve(convert_json_to_objects.bind(_this3)(response));
+        });
+      });
+    }
+  }]);
+
+  return RestResource;
+})();
+
+/**
+ * Takes in JSON from requests and converts internal objects into objects representing the
+ * resource class.
+ *
+ * @param {Array/Object} data - JSON data, either a single object or an array of objects
+ * @return {Array/Object} - Returns the data as objects of the resource class
+ * @private
+ */
+
+function convert_json_to_objects(data) {
+  var _this4 = this;
+
+  if (Array.isArray(data)) {
+    return data.map(function (item, index, arr) {
+      return new _this4(item, true);
+    });
+  } else {
+    return new this(data, true);
+  }
+}
+
+module.exports = RestResource;
+
+},{"./ns1_request":12,"pluralize":19}],15:[function(require,module,exports){
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var NS1Request = require('./ns1_request');
+
+/**
+ * Handles all search-able entities on the NS1 platform. Currently
+ * can only search types of "zone" or "record."
+ *
+ * @memberof NS1
+ */
+
+var Search =
+
+/**
+ * Requires an initial string to query with. Optional arguments
+ * include type, which defaults to "all", and max, which defaults to 10.
+ *
+ * @param {String} query
+ * @param {String} type
+ * @param {Number} max
+ * @return {Promise}
+ */
+function Search(query, type, max) {
+  _classCallCheck(this, Search);
+
+  if (typeof query !== 'string') {
+    throw new Error('NS1.Search requires a string to query');
+  }
+
+  var query_object = {
+    q: query
+  };
+
+  if (type) {
+    query_object.type = type;
+  }
+
+  if (max) {
+    query_object.max = max;
+  }
+
+  return new NS1Request('get', '/search', query_object);
+};
+
+module.exports = Search;
+
+},{"./ns1_request":12}],16:[function(require,module,exports){
+"use strict";
+
+var NS1Request = require('./ns1_request');
+
+/**
+ * Static class for all stats in NS1
+ *
+ * @memberof NS1
+ */
+var Stats = {
+
+  /**
+   * Gets queries per seconds. If no argument is supplied for "id", gets qps on an account
+   * wide level. IDs can either be the name of zones, or records in the /:zone/:domain/:type format
+   *
+   * @param {String} id - name of the individual zone or records to get stats for
+   * @return Promise
+   */
+
+  qps: function qps(id) {
+    id = id || '';
+    return new NS1Request('get', '/stats/qps/' + id);
+  },
+
+  /**
+   * Gets usage stats. If no argument is supplied for "id", gets usage stats on an account
+   * wide level. IDs can either be the name of zones, or records in the /:zone/:domain/:type format
+   *
+   * @param {String} id - name of the individual zone or records to get stats for
+   * @return Promise
+   */
+  usage: function usage(id) {
+    id = id || '';
+    return new NS1Request('get', '/stats/usage/' + id);
+  }
+};
+
+module.exports = Stats;
+
+},{"./ns1_request":12}],17:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var RestResource = require('./rest_resource');
+var NS1Request = require('./ns1_request');
+var Stats = require('./stats');
+
+/**
+ * Represents all Zone objects on a client's account.
+ *
+ * @extends RestResource
+ * @memberof NS1
+ */
 
 var Zone = (function (_RestResource) {
   _inherits(Zone, _RestResource);
@@ -48,79 +1398,91 @@ var Zone = (function (_RestResource) {
     return _possibleConstructorReturn(this, Object.getPrototypeOf(Zone).apply(this, arguments));
   }
 
+  _createClass(Zone, [{
+    key: 'get_resource_path',
+
+    /**
+     * Defines the resource path w/ necessary zone information to succesfully GET the resource. Used
+     * internally.
+     *
+     * @return {String}
+     */
+    value: function get_resource_path() {
+      return this.constructor.get_base_path() + '/' + this.attributes.zone;
+    }
+
+    /**
+     * Imports a zonefile and defines the zone's records w/ the info in the file.
+     * 
+     * @param {String} zone_name
+     * @param {String} filepath
+     * @param {Boolean} async_call
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'qps',
+
+    /**
+     * Returns the Queries Per Second statistics of a single record
+     *
+     * @return {Promise}
+     */
+    value: function qps() {
+      return Stats.qps(this.attributes.zone);
+    }
+
+    /**
+     * Returns usage statistics on a single record
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'usage',
+    value: function usage() {
+      return Stats.usage(this.attributes.zone);
+    }
+  }], [{
+    key: 'import_zonefile',
+    value: function import_zonefile(zone_name, filepath, async_call) {
+      async_call = async_call || true;
+      return new NS1Request('put', '/import/zonefile/' + zone_name + '?async=' + async_call, {}, { 'zonefile': filepath });
+    }
+
+    /**
+     * Wrapper method to make the import_zonefile API call synchronously.
+     *
+     * @param {String} zone_name
+     * @param {String} filepath
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'import_zonefile_sync',
+    value: function import_zonefile_sync(zone_name, filepath) {
+      return this.import_zonefile(zone_name, filepath, false);
+    }
+
+    /**
+     * Returns all the networks a user can apply a zone to
+     *
+     * @return {Promise}
+     */
+
+  }, {
+    key: 'networks',
+    value: function networks() {
+      return new NS1Request('get', '/networks');
+    }
+  }]);
+
   return Zone;
 })(RestResource);
 
 module.exports = Zone;
 
-},{"../rest_resource":3}],3:[function(require,module,exports){
-(function (global){
-"use strict";
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var request = require('superagent'),
-    pluralize = require('pluralize');
-
-var NS1_API_ROOT = 'https://api.nsone.net/v1/';
-
-var RestResource = (function () {
-  function RestResource(attributes) {
-    _classCallCheck(this, RestResource);
-
-    this.attributes = attributes || {};
-  }
-
-  _createClass(RestResource, [{
-    key: 'update',
-    value: function update() {}
-  }, {
-    key: 'save',
-    value: function save() {}
-  }, {
-    key: 'remove',
-    value: function remove() {}
-  }], [{
-    key: 'get_resource_name',
-    value: function get_resource_name() {
-      return pluralize(this.name.toLowerCase());
-    }
-  }, {
-    key: 'get_resource_url',
-    value: function get_resource_url() {
-      return '' + NS1_API_ROOT + this.get_resource_name() + '/';
-    }
-  }, {
-    key: 'find',
-    value: function find(attributes) {
-      if (attributes == undefined) {
-        return this.list();
-      }
-    }
-  }, {
-    key: 'list',
-    value: function list() {
-      var resource_url = this.get_resource_url();
-      return new Promise(function (resolve, reject) {
-        request.get(resource_url).set('X-NSONE-Key', global.__NS1_API_KEY__).set('Accept', 'application/json').end(function (err, res) {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(res.text);
-        });
-      });
-    }
-  }]);
-
-  return RestResource;
-})();
-
-module.exports = RestResource;
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"pluralize":5,"superagent":7}],4:[function(require,module,exports){
+},{"./ns1_request":12,"./rest_resource":14,"./stats":16}],18:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -286,7 +1648,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],5:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /* global define */
 
 (function (root, pluralize) {
@@ -721,7 +2083,7 @@ Emitter.prototype.hasListeners = function(event){
   return pluralize;
 });
 
-},{}],6:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
@@ -746,7 +2108,7 @@ module.exports = function(arr, fn, initial){
   
   return curr;
 };
-},{}],7:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -1929,5 +3291,45 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":4,"reduce":6}]},{},[1])(1)
+},{"emitter":18,"reduce":20}],22:[function(require,module,exports){
+module.exports={
+  "name": "ns1",
+  "version": "1.0.0",
+  "description": "NS1.com JS API",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 babel-node ./node_modules/.bin/babel-istanbul cover ./node_modules/mocha/bin/_mocha -- --full-trace test/**/*_test.js",
+    "test-and-record": "NS1_NOCK_RECORD=true npm run test",
+    "create-browser-script": "browserify lib/index.js -s NS1API -o dist/ns1api_client.js -t [ babelify --presets [ es2015 ] ]",
+    "doc": "rm -rf docs/ && jsdoc lib/**.js README.md -d docs",
+    "gh-pages": "npm run doc && git branch -D gh-pages; git checkout --orphan gh-pages && find . -maxdepth 1 ! -name 'docs' ! -name '.*' | xargs rm -rf && mv docs/* . && git add --all . && git commit -am 'documentation' && git push origin gh-pages --force && git checkout develop"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ns1/ns1-js.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://github.com/ns1/ns1-js",
+  "dependencies": {
+    "babel": "6.3.13",
+    "babel-cli": "6.3.17",
+    "babel-istanbul": "0.5.9",
+    "babel-preset-es2015": "6.3.13",
+    "babelify": "7.2.0",
+    "browserify": "12.0.1",
+    "nock": "3.4.0",
+    "pluralize": "1.2.1",
+    "superagent": "1.5.0"
+  },
+  "devDependencies": {
+    "chai": "3.4.1",
+    "change-case": "2.3.0",
+    "mocha": "2.3.4",
+    "jsdoc": "3.4.0",
+    "babel-plugin-transform-es2015-destructuring": "6.3.15"
+  }
+}
+
+},{}]},{},[9])(9)
 });
