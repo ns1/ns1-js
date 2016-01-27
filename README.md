@@ -63,7 +63,7 @@ All method signatures follow the NS1 API, so whatever is passed to "find" a reco
 
 Some examples:
 
-```
+```javascript
 var NS1 = require('ns1')
 
 NS1.set_api_key([your api key])
