@@ -1,6 +1,6 @@
 # NS1 JS API
 
-This is a high level JS client for NS1.com's REST API. Works as a Node.js module. If you'd like to use this in the browser and need to bypass our CORS restrictions, please contact us directly. Requires an NS1 account w/ an API key.
+This is a high level JS client for NS1.com's REST API. Works as a Node.js module, tested on Node v 5+. If you'd like to use this in the browser and need to bypass our CORS restrictions, please contact us directly. Requires an NS1 account w/ an API key.
 
 Publishing this to NPM is on the roadmap. For now, download the repo and include it via npm as such:
 
