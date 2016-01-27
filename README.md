@@ -45,14 +45,6 @@ new NS1.Zone({ zone: 'yourzone.com' }).save().then(function(zone) {
 })
 ```
 
-### Run the tests
-
-Tests use recordings of all HTTP responses so you shouldn't be making calls against the actual server, but we still require an API key just in case.
-
-`$ export NS1_JS_TEST_API_KEY=[your api key]`
-`$ npm install`
-`$ npm test`
-
 ### Code Usage
 
 All objects (with the exception of `NS1Request` and `RestResource`) follow the resource concept and have static `find` and `create` methods for retrieving and creating objects of those types, respectively. For some objects, `find` can be passed with no arguments to get all objects of that data type, e.g. `NS1.Zone.find()`.
