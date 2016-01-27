@@ -6,11 +6,11 @@ let nock = require('nock'),
 
 module.exports = function (name, force) {
   let fp              = `test/fixtures/${name}.js`,
-      force_recording = force || !!process.env.NS1_NOCK_RECORD,
       has_fixtures    = false
 
   return {
     before() {
+      let force_recording = force || !!process.env.NS1_NOCK_RECORD
       if (force_recording == false){
         try {
           require('../../' + fp)

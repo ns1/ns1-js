@@ -8,6 +8,10 @@ const TEST_ZONE = 'testdomain.test'
 
 utils.setup_context('NS1.Search', function() {
 
+  let zone_object
+  utils.test_zone_before_and_after.call(this)
+  .then((zone) => { zone_object = zone })
+
   describe('new NS1.Search() constructor', function() {
     it('should throw an error if no query parameter is supplied', function() {
       expect(() => new NS1.Search()).to.throw('NS1.Search requires a string to query')

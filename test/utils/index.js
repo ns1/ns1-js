@@ -16,6 +16,10 @@ if (process.env.NS1_JS_TEST_API_KEY && process.env.NS1_JS_TEST_API_KEY !== NS1.N
   process.exit(1)
 }
 
+if (process.env.NS1_JS_TEST_API_URL && process.env.NS1_JS_TEST_API_URL !== NS1.NS1Request.get_api_url()) {
+  NS1.set_api_url(process.env.NS1_JS_TEST_API_URL)
+}
+
 module.exports = {
 
   setup_context(context_str, options, cb) {
@@ -33,12 +37,31 @@ module.exports = {
 
       before(recorder.before)
       after(recorder.after)
-      if (typeof cb === 'function') {
-        cb.call(this)
-      }
+
+      context(options.record || !!process.env.NS1_NOCK_RECORD ? 'setting up recorder...' : 'loading recording fixtures...', cb)
     })
   },
 
-  rest_resource_tests: require('./rest_resource_tests')
+  rest_resource_tests: require('./rest_resource_tests'),
+
+  test_zone_before_and_after: function() {
+    return new Promise((resolve, reject) => {
+      before(function() {
+        return new NS1.NS1Request(
+          'put',
+          '/zones/testdomain.test',
+          {
+            "zone":   "testdomain.test",
+            "ttl":    3600,
+            "nx_ttl": 60
+          }
+        ).then(resolve)
+      })
+
+      after(function() {
+        return new NS1.NS1Request('del', '/zones/testdomain.test')
+      })
+    })
+  }
 
 }

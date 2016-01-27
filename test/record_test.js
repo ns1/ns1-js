@@ -5,14 +5,22 @@ let expect = require('chai').expect,
     utils  = require('./utils')
 
 utils.setup_context('NS1.Record', function() {
+
+  let zone_object,
+      existing_val = 'testdomain.test/testdomain.test/NS',
+      existing_obj = {
+        'zone':   'testdomain.test',
+        'domain': 'testdomain.test',
+        'type':   'NS'
+      }
+
+  utils.test_zone_before_and_after.call(this)
+  .then((zone) => { zone_object = zone })
+
   utils.rest_resource_tests.call(this, {
     subject:        NS1.Record,
-    existing_val:   'testdomain.test/testdomain.test/NS',
-    existing_obj:   {
-      'zone':   'testdomain.test',
-      'domain': 'testdomain.test',
-      'type':   'NS'
-    },
+    existing_val:   existing_val,
+    existing_obj:   existing_obj,
     new_object_val: 'testdomain.test/www.testdomain.test/A',
     new_object_obj: {
       'zone':   'testdomain.test',
@@ -37,7 +45,6 @@ utils.setup_context('NS1.Record', function() {
     })
   })
 
-  // TODO: Make sure these actually do something
   describe('NS1.Record.metatypes()', function() {
     it('Should return the metatypes list as JSON', function() {
       return NS1.Record.metatypes().then((types) => {
@@ -54,6 +61,33 @@ utils.setup_context('NS1.Record', function() {
         expect(typeof types).to.eq('object')
         expect(types.up.inputs).to.deep.eq(["up"])
         expect(types.up.shortdesc).to.eq('Removes "down" answers')
+      })
+    })
+  })
+
+  describe('#usage', function() {
+    it('Should return record usage stats', function() {
+      return NS1.Record.find(existing_val)
+      .then((record) => {
+        return record.usage()
+      }).then((stats) => {
+        expect(Array.isArray(stats)).to.eq(true)
+        expect(stats[0].zone).to.eq('testdomain.test')
+        expect(stats[0].queries).to.eq(0)
+        expect(stats[0].rectype).to.eq('NS')
+      })
+    })
+  })
+
+  describe('#stats', function() {
+    it('Should return record qps stats', function() {
+      return NS1.Record.find(existing_val)
+      .then((record) => {
+        return record.qps()
+      }).then((stats) => {
+        expect(typeof stats).to.eq('object')
+        expect(typeof stats.qps).to.eq('number')
+        expect(stats.qps).to.eq(0)
       })
     })
   })
