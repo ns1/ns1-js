@@ -1,6 +1,6 @@
 {
   "name": "ns1",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "NS1.com JS API",
   "main": "lib/index.js",
   "scripts": {
