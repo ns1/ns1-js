@@ -430,7 +430,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var RestResource = require('./rest_resource');
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 
 /**
  * Class representing data sources in NS1.
@@ -513,7 +513,7 @@ var DataFeed = (function (_RestResource) {
 
 module.exports = DataFeed;
 
-},{"./ns1_request":12,"./rest_resource":14}],8:[function(require,module,exports){
+},{"./NS1_request":12,"./rest_resource":14}],8:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -525,7 +525,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var RestResource = require('./rest_resource');
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 
 /**
  * Class representing data sources in NS1.
@@ -584,7 +584,7 @@ var DataSource = (function (_RestResource) {
 
 module.exports = DataSource;
 
-},{"./ns1_request":12,"./rest_resource":14}],9:[function(require,module,exports){
+},{"./NS1_request":12,"./rest_resource":14}],9:[function(require,module,exports){
 "use strict";
 
 /**
@@ -604,7 +604,7 @@ var NS1 = {
   Account: require('./account'),
 
   // helper classes
-  NS1Request: require('./ns1_request'),
+  NS1Request: require('./NS1_request'),
   Search: require('./search'),
 
   // convenience methods
@@ -618,7 +618,7 @@ var NS1 = {
 
 module.exports = NS1;
 
-},{"./account":3,"./data_feed":7,"./data_source":8,"./monitor":10,"./notification_list":11,"./ns1_request":12,"./record":13,"./search":15,"./stats":16,"./zone":17}],10:[function(require,module,exports){
+},{"./account":3,"./data_feed":7,"./data_source":8,"./monitor":10,"./notification_list":11,"./NS1_request":12,"./record":13,"./search":15,"./stats":16,"./zone":17}],10:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -630,7 +630,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var RestResource = require('./rest_resource');
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 
 /**
  * Class representing monitors / monitoring jobs in NS1.
@@ -720,7 +720,7 @@ var Monitor = (function (_RestResource) {
 
 module.exports = Monitor;
 
-},{"./ns1_request":12,"./rest_resource":14}],11:[function(require,module,exports){
+},{"./NS1_request":12,"./rest_resource":14}],11:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -732,7 +732,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var RestResource = require('./rest_resource');
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 
 /**
  * Class representing Notification Lists in NS1
@@ -784,7 +784,7 @@ var NotificationList = (function (_RestResource) {
 
 module.exports = NotificationList;
 
-},{"./ns1_request":12,"./rest_resource":14}],12:[function(require,module,exports){
+},{"./NS1_request":12,"./rest_resource":14}],12:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -975,7 +975,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var RestResource = require('./rest_resource');
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 var Stats = require('./stats');
 
 /**
@@ -1089,14 +1089,14 @@ var Record = (function (_RestResource) {
 
 module.exports = Record;
 
-},{"./ns1_request":12,"./rest_resource":14,"./stats":16}],14:[function(require,module,exports){
+},{"./NS1_request":12,"./rest_resource":14,"./stats":16}],14:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var NS1Request = require('./ns1_request'),
+var NS1Request = require('./NS1_request'),
     pluralize = require('pluralize');
 
 /**
@@ -1278,12 +1278,12 @@ function convert_json_to_objects(data) {
 
 module.exports = RestResource;
 
-},{"./ns1_request":12,"pluralize":19}],15:[function(require,module,exports){
+},{"./NS1_request":12,"pluralize":19}],15:[function(require,module,exports){
 "use strict";
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 
 /**
  * Handles all search-able entities on the NS1 platform. Currently
@@ -1327,10 +1327,10 @@ function Search(query, type, max) {
 
 module.exports = Search;
 
-},{"./ns1_request":12}],16:[function(require,module,exports){
+},{"./NS1_request":12}],16:[function(require,module,exports){
 "use strict";
 
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 
 /**
  * Static class for all stats in NS1
@@ -1367,7 +1367,7 @@ var Stats = {
 
 module.exports = Stats;
 
-},{"./ns1_request":12}],17:[function(require,module,exports){
+},{"./NS1_request":12}],17:[function(require,module,exports){
 "use strict";
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -1379,7 +1379,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var RestResource = require('./rest_resource');
-var NS1Request = require('./ns1_request');
+var NS1Request = require('./NS1_request');
 var Stats = require('./stats');
 
 /**
@@ -1482,7 +1482,7 @@ var Zone = (function (_RestResource) {
 
 module.exports = Zone;
 
-},{"./ns1_request":12,"./rest_resource":14,"./stats":16}],18:[function(require,module,exports){
+},{"./NS1_request":12,"./rest_resource":14,"./stats":16}],18:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
