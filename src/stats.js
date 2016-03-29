@@ -1,13 +1,13 @@
 "use strict";
 
-var NS1Request = require('./NS1_request');
+let NS1Request   = require('./NS1_request')
 
 /**
  * Static class for all stats in NS1
  *
  * @memberof NS1
  */
-var Stats = {
+let Stats = {
 
   /**
    * Gets queries per seconds. If no argument is supplied for "id", gets qps on an account
@@ -16,10 +16,9 @@ var Stats = {
    * @param {String} id - name of the individual zone or records to get stats for
    * @return Promise
    */
-
-  qps: function qps(id) {
-    id = id || '';
-    return new NS1Request('get', '/stats/qps/' + id);
+  qps(id) {
+    id = id || ''
+    return new NS1Request('get', `/stats/qps/${id}`)
   },
 
   /**
@@ -29,10 +28,11 @@ var Stats = {
    * @param {String} id - name of the individual zone or records to get stats for
    * @return Promise
    */
-  usage: function usage(id) {
-    id = id || '';
-    return new NS1Request('get', '/stats/usage/' + id);
+  usage(id) {
+    id = id || ''
+    return new NS1Request('get', `/stats/usage/${id}`)
   }
-};
 
-module.exports = Stats;
+}
+
+module.exports = Stats
