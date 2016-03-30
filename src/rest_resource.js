@@ -40,9 +40,11 @@ class RestResource {
       let method = this.from_server ? 'post' : 'put',
           uri    = this.from_server ? this.get_resource_path() : this.create_resource_path()
 
-      new NS1Request(method, uri, this.attributes)
+      return new NS1Request(method, uri, this.attributes)
           .then((response) => {
             resolve(convert_json_to_objects.bind(this.constructor)(response))
+          }).catch((err) => {
+            reject(err)
           })
     })
   }
@@ -54,9 +56,11 @@ class RestResource {
    */
   destroy() {
     return new Promise((resolve, reject) => {
-      new NS1Request('del', this.get_resource_path())
+      return new NS1Request('del', this.get_resource_path())
           .then((response) => {
             resolve(response)
+          }).catch((err) => {
+            reject(err)
           })
     })
   }
@@ -118,9 +122,11 @@ class RestResource {
     }
 
     return new Promise((resolve, reject) => {
-      new NS1Request('get', resource_uri)
+      return new NS1Request('get', resource_uri)
           .then((response) => {
             resolve(convert_json_to_objects.bind(this)(response))
+          }).catch((err) => {
+            reject(err)
           })
     })
   }

@@ -110,7 +110,7 @@ function apply_data(query, files) {
 function create_promise() {
   return new Promise((resolve, reject) => {
     this.request.end((err, response) => {
-      if (err) throw handle_error.call(this, err, response)
+      if (err) reject(handle_error.call(this, err, response))
 
       if (this.is_json_response && this.method != 'del' && response.text !== '') {
         try {
