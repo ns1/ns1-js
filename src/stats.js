@@ -18,7 +18,7 @@ let Stats = {
    */
   qps(id) {
     id = id || ''
-    return new NS1Request('get', `/stats/qps/${id}`)
+    return new NS1Request('get', `stats/qps/${id}`)
   },
 
   /**
@@ -30,7 +30,7 @@ let Stats = {
    */
   usage(id) {
     id = id || ''
-    return new NS1Request('get', `/stats/usage/${id}`)
+    return new NS1Request('get', `stats/usage/${id}`)
   }
 
 }

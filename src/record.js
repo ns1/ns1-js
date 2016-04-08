@@ -29,7 +29,15 @@ class Record extends RestResource {
    * @return {String}
    */
   get_resource_path() {
-    return `${this.constructor.get_base_path()}/${this.attributes.zone}/${this.attributes.domain}/${this.attributes.type}`
+    let path = [this.constructor.get_base_path(), this.attributes.zone, this.attributes.domain, this.attributes.type].map((item) => {
+      return encodeURIComponent(item.replace(/\//g, "%2f"))
+    }).join('/')
+
+    if (path[0] === '/') {
+      path = path.substring(1)
+    }
+
+    return path
   }
 
   /**
@@ -70,7 +78,7 @@ class Record extends RestResource {
    * @return {Promise}
    */
   qps() {
-    return Stats.qps(`${this.attributes.zone}/${this.attributes.domain}/${this.attributes.type}`)
+    return Stats.qps(this.get_resource_path().replace(`${this.constructor.get_base_path()}/`, ''))
   }
 
   /**
@@ -79,7 +87,7 @@ class Record extends RestResource {
    * @return {Promise}
    */
   usage() {
-    return Stats.usage(`${this.attributes.zone}/${this.attributes.domain}/${this.attributes.type}`)
+    return Stats.usage(this.get_resource_path().replace(`${this.constructor.get_base_path()}/`, ''))
   }
 }
 

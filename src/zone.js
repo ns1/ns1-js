@@ -19,7 +19,15 @@ class Zone extends RestResource {
    * @return {String}
    */
   get_resource_path() {
-    return `${this.constructor.get_base_path()}/${this.attributes.zone}`
+    let path = [this.constructor.get_base_path(), this.attributes.zone].map((item) => {
+      return encodeURIComponent(item.replace(/\//g, "%2f"))
+    }).join('/')
+
+    if (path[0] === '/') {
+      path = path.substring(1)
+    }
+
+    return path
   }
 
   /**
@@ -61,7 +69,7 @@ class Zone extends RestResource {
    * @return {Promise}
    */
   qps() {
-    return Stats.qps(this.attributes.zone)
+    return Stats.qps(encodeURIComponent(this.attributes.zone.replace(/\//g, "%2f")))
   }
 
   /**
@@ -70,7 +78,7 @@ class Zone extends RestResource {
    * @return {Promise}
    */
   usage() {
-    return Stats.usage(this.attributes.zone)
+    return Stats.usage(encodeURIComponent(this.attributes.zone.replace(/\//g, "%2f")))
   }
 
 }
