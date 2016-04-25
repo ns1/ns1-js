@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: rest_resource.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: rest_resource.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+let NS1Request = require('./NS1_request'),
+    pluralize  = require('pluralize')
+
+/**
+ * Parent class for all resourceful objects. Grants basic REST backed resource
+ * object methods and behaviors, e.g. new Object({ object_vars }).save, Object.create,
+ * #destroy and #update methods.
+ */
+class RestResource {
+
+  /**
+   * @param {Object} attributes   - The attributes representing a new object
+   * @param {Boolean} from_server - Used internally to know if an object exists on the server
+   */
+  constructor(attributes, from_server) {
+    this.attributes  = attributes || {}
+    this.from_server = from_server
+  }
+
+  /**
+   * Updates an object w/ the provided attributes.
+   *
+   * @param {Object} attributes
+   * @return {Promise}
+   */
+  update(attributes) {
+    this.attributes = Object.assign({}, this.attributes, attributes)
+    return this.save()
+  }
+
+  /**
+   * Saves an object on the server.
+   *
+   * @return {Promise}
+   */
+  save() {
+    return new Promise((resolve, reject) => {
+      let method = this.from_server ? 'post' : 'put',
+          uri    = this.from_server ? this.get_resource_path() : this.create_resource_path()
+
+      return new NS1Request(method, uri, this.attributes)
+          .then((response) => {
+            resolve(convert_json_to_objects.bind(this.constructor)(response))
+          }).catch((err) => {
+            reject(err)
+          })
+    })
+  }
+
+  /**
+   * Destroys an object on the server w/ the delete HTTP verb.
+   *
+   * @return {Promise}
+   */
+  destroy() {
+    return new Promise((resolve, reject) => {
+      return new NS1Request('del', this.get_resource_path())
+          .then((response) => {
+            resolve(response)
+          }).catch((err) => {
+            reject(err)
+          })
+    })
+  }
+
+  /**
+   * Creates a new object w/ the provided attributes.
+   *
+   * @param {Object} attributes
+   * @return {Promise}
+   */
+  static create(attributes) {
+    return new this(attributes).save()
+  }
+
+  /**
+   * Defines the default path for the resource, e.g. zones == '/zones'. Default behavior is the to take
+   * the class's name, lower case it, and pluralize it. Overrideable in child classes.
+   *
+   * @return {String}
+   */
+  static get_base_path() {
+    return pluralize(this.name.toLowerCase())
+  }
+
+  /**
+   * Defines the path to posting changes &amp; getting details on a single resource. Method is
+   * required to be overriden within child classes as most paths will require info pertaining
+   * to the individual resource's attributes.
+   *
+   * @return {String}
+   */
+  get_resource_path() {
+    throw new Error(`NS1 JS API: NS1.${this.constructor.name}.get_resource_path() requires a definition`)
+  }
+
+  /**
+   * Overrideable method to provide non-standard "PUT" behavior on creating new records.
+   * E.g. Zones require info in the URI where Data Sources don't.
+   *
+   * @return {String}
+   */
+  create_resource_path() {
+    return this.get_resource_path()
+  }
+
+  /**
+   * Finds either all the relevant resources when not given any arguments (e.g. finds all Zones in an account)
+   * but when supplied an identifier will only return that single resource (e.g. /zones/testdomain.test will
+   * only return info pertaining to the zone testdomain.test)
+   *
+   * @param {String} uid - String identifier of the object which is conjoined with the base_path of the resource
+   * @return {Promise}
+   */
+  static find(uid) {
+    let resource_uri = this.get_base_path()
+
+    if (uid !== undefined) {
+      resource_uri += `/${uid}`
+    }
+
+    return new Promise((resolve, reject) => {
+      return new NS1Request('get', resource_uri)
+          .then((response) => {
+            resolve(convert_json_to_objects.bind(this)(response))
+          }).catch((err) => {
+            reject(err)
+          })
+    })
+  }
+}
+
+/**
+ * Takes in JSON from requests and converts internal objects into objects representing the
+ * resource class.
+ *
+ * @param {Array/Object} data - JSON data, either a single object or an array of objects
+ * @return {Array/Object} - Returns the data as objects of the resource class
+ * @private
+ */
+function convert_json_to_objects(data) {
+  if (Array.isArray(data)) {
+    return data.map((item, index, arr) => {
+      return new this(item, true)
+    })
+  } else {
+    return new this(data, true)
+  }
+}
+
+module.exports = RestResource
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="NS1.DataFeed.html">DataFeed</a></li><li><a href="NS1.DataSource.html">DataSource</a></li><li><a href="NS1.Monitor.html">Monitor</a></li><li><a href="NS1.NotificationList.html">NotificationList</a></li><li><a href="NS1.NS1Request.html">NS1Request</a></li><li><a href="NS1.Record.html">Record</a></li><li><a href="NS1.Search.html">Search</a></li><li><a href="NS1.Zone.html">Zone</a></li><li><a href="RestResource.html">RestResource</a></li></ul><h3>Namespaces</h3><ul><li><a href="NS1.html">NS1</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Apr 25 2016 16:09:17 GMT-0400 (EDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
