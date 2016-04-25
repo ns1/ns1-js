@@ -17,7 +17,7 @@ class NS1Request {
    * @param {String} method - The HTTP verb to use in this request e.g. get, post, etc. Must be lower case.
    * @param {String} uri    - The URI to query against the base API URL
    * @param {Object} query  - Any parameters to be sent in the query string for GET requests or in the req body for others
-   * @param {Object} files  - Key / value mapped object containing file paths for uploads.
+   * @param {Object/FormData} files  - Key / value mapped object containing file paths for uploads, or a FormData object if on the browser.
    * @return {Promise} an ES2015 promise w/ then and catch methods for continuation handling.
    */
   constructor(method, uri, query, files) {
@@ -81,7 +81,7 @@ class NS1Request {
  * file attachments.
  *
  * @param {Object} query  - Any parameters to be sent in the query string for GET requests or in the req body for others
- * @param {Object} files  - Key / value mapped object containing file paths for uploads.
+ * @param {Object/FormData} files  - Key / value mapped object containing file paths for uploads, or a FormData object if it's coming from the browser
  * @private
  */
 function apply_data(query, files) {
@@ -94,8 +94,12 @@ function apply_data(query, files) {
   }
 
   if (files !== undefined) {
-    for (var key in files) {
-      this.request = this.request.attach(key, files[key])
+    if (files instanceof FormData) {
+      this.request = this.request.send(files)
+    } else {
+      Object.keys(files).forEach((key) => {
+        this.request = this.request.attach(key, files[key])
+      })
     }
   }
 }

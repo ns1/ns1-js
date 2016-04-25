@@ -34,24 +34,36 @@ class Zone extends RestResource {
    * Imports a zonefile and defines the zone's records w/ the info in the file.
    * 
    * @param {String} zone_name
-   * @param {String} filepath
+   * @param {String/File} file
    * @param {Boolean} async_call
    * @return {Promise}
    */
-  static import_zonefile(zone_name, filepath, async_call) {
-    async_call = async_call || true
-    return new NS1Request('put', `/import/zonefile/${zone_name}?async=${async_call}`, {}, { 'zonefile': filepath })
+  static import_zonefile(zone_name, file, async_call) {
+    let file_data
+
+    if (file instanceof File && typeof FormData === 'function') {
+      file_data = new FormData()
+      file_data.append('zonefile', file)
+    } else if (typeof file === 'string') {
+      file_data = { zonefile: file }
+    }
+
+    async_call = async_call !== undefined ? async_call : true
+
+    return new NS1Request('put', `/import/zonefile/${zone_name}?async=${async_call}`, undefined, file_data).then((zone_attrs) => {
+      return new Zone(zone_attrs, true)
+    })
   }
 
   /**
    * Wrapper method to make the import_zonefile API call synchronously.
    *
    * @param {String} zone_name
-   * @param {String} filepath
+   * @param {String/File} file
    * @return {Promise}
    */
-  static import_zonefile_sync(zone_name, filepath) {
-    return this.import_zonefile(zone_name, filepath, false)
+  static import_zonefile_sync(zone_name, file) {
+    return this.import_zonefile(zone_name, file, false)
   }
 
   /**
