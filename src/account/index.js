@@ -45,8 +45,8 @@ let Account = {
     return new NS1Request('get', '/account/billataglance')
   },
 
-  activity() {
-    return new NS1Request('get', '/account/activity')
+  activity(params) {
+    return new NS1Request('get', '/account/activity', params)
   }
 
 }
