@@ -14,7 +14,7 @@ class ApiKey extends RestResource {
   }
 
   create_resource_path() {
-    return this.get_resource_path()
+    return this.constructor.get_base_path()
   }
 
 }
