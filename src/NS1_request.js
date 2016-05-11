@@ -149,9 +149,16 @@ function handle_error(err, response) {
     } catch(e) {
       final_message = response.text
     }
-    return new Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${final_message} \n`) 
+    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${final_message} \n`, final_message) 
   } else {
-    return new Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${err.message} \n`) 
+    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${err.message} \n`, err.message) 
+  }
+}
+
+class NS1Error extends Error {
+  constructor(message, raw) {
+    super(message)
+    this.raw = raw
   }
 }
 
