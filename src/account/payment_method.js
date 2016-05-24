@@ -17,6 +17,10 @@ class PaymentMethod extends RestResource {
     return this.constructor.get_base_path()
   }
 
+  set_as_default() {
+    return new NS1Request('post', `${this.get_resource_path()}`)
+  }
+
 }
 
 module.exports = PaymentMethod
