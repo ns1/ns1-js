@@ -35,6 +35,8 @@ class DataFeed extends RestResource {
     return new Promise((resolve, reject) => {
       return super.save.call(this).then((results) => {
         resolve(this.constructor.add_data_source_to_objects(results, data_source_id))
+      }).catch((err) => {
+        reject(err)
       })
     })
   }
@@ -44,6 +46,8 @@ class DataFeed extends RestResource {
     return new Promise((resolve, reject) => {
       return super.find.call(this, id).then((results) => {
         resolve(this.add_data_source_to_objects(results, data_source_id))
+      }).catch((err) => {
+        reject(err)
       })
     })
   }
