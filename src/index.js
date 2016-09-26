@@ -20,8 +20,8 @@ let NS1 = {
   Search:     require('./search'),
   
   // convenience methods
-  set_api_key(key) {
-    return NS1.NS1Request.set_api_key(key)
+  set_api_key(key, start, err, success) {
+    return NS1.NS1Request.set_api_key(key, start, err, success)
   },
 
   set_api_url(url) {
