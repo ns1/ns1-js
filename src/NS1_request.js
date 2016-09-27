@@ -3,7 +3,8 @@
 let superagent = require('superagent')
 
 let api_key,
-    api_url = 'https://api.nsone.net/v1/'
+    api_url = 'https://api.nsone.net/v1/',
+    errorCb, successCb, startCb;
 
 /** 
  * Class representing all HTTP requests to the NS1 API. Uses the superagent
@@ -51,9 +52,15 @@ class NS1Request {
   /**
    * Sets the API key used by the class.
    * @param {String} key - The API key supplied by the user
+   * @param {Function} start - function reference to be called whenever a request is made.
+   * @param {Function} error - function reference to be called when a request has an error.
+   * @param {Function} success - function reference to be called whenever a request completes successfully.
    */
-  static set_api_key(key) {
-    api_key = key 
+  static set_api_key(key, start, error, success) {
+    api_key = key;
+    errorCb = error ? error : undefined;
+    startCb = start ? start : undefined;
+    successCb = success ? success : undefined;
   }
 
   /**
@@ -85,6 +92,9 @@ class NS1Request {
  * @private
  */
 function apply_data(query, files) {
+  if(startCb){
+    startCb();
+  }
   if (query !== undefined) {
     if (this.method === 'get') {
       this.request = this.request.query(query)
@@ -114,7 +124,13 @@ function apply_data(query, files) {
 function create_promise() {
   return new Promise((resolve, reject) => {
     this.request.end((err, response) => {
-      if (err) reject(handle_error.call(this, err, response))
+      if (err) {
+        reject(handle_error.call(this, err, response))
+      }else{
+        if(successCb){
+          successCb(response);
+        }
+      }
 
       if (this.is_json_response && this.method != 'del' && response.text !== '') {
         try {
@@ -125,7 +141,6 @@ function create_promise() {
       } else {
         // TODO: Determine if there's a need to filter/reject empty response bodies on 200's
       }
-
       return resolve(parsed || true)
     })
   })
@@ -142,6 +157,9 @@ function create_promise() {
  * @private
  */
 function handle_error(err, response) {
+  if(errorCb){
+    errorCb(err, response); 
+  }
   if (response && response.text) {
     let final_message
     try {
