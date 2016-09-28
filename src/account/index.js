@@ -47,6 +47,10 @@ let Account = {
 
   activity(params) {
     return new NS1Request('get', '/account/activity', params)
+  },
+
+  logout(){
+    return new NS1Request('delete', '/account/logout')
   }
 
 }
