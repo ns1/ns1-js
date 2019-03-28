@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ns1/ns1-js.svg?branch=master)](https://travis-ci.org/ns1/ns1-js)
 
-This is a high level JS client for NS1.com's REST API. Works as a Node.js module, tested on Node v 5+. If you'd like to use this in the browser and need to bypass our CORS restrictions, please contact us directly. Requires an NS1 account w/ an API key.
+This is a high level JS client for NS1.com's REST API. Works as a Node.js module, tested on Node v 5+. Requires an NS1 account w/ an API key.
 
 Using Gitflow so most up-to-date version will be in the develop branch.
 
