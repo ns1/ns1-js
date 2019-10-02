@@ -2017,7 +2017,7 @@ function create_promise() {
         try {
           var parsed = JSON.parse(response.text);
         } catch (parse_err) {
-          throw new Error('NS1 API Response couldn\'t parse as JSON: ' + parse_err);
+          return reject(new NS1Error('NS1 API Response couldn\'t parse as JSON: ' + parse_err));
         }
       } else {
         // TODO: Determine if there's a need to filter/reject empty response bodies on 200's
