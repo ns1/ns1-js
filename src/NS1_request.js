@@ -6,7 +6,7 @@ let api_key,
     api_url = 'https://api.nsone.net/v1/',
     errorCb, successCb, startCb;
 
-/** 
+/**
  * Class representing all HTTP requests to the NS1 API. Uses the superagent
  * lib to be cross compatible w/ Node.js and Browser based environment.
  * @memberof NS1
@@ -31,24 +31,24 @@ class NS1Request {
     this.is_json_response = true // flag to adjust later on when dealing with binary file responses
 
     this.request = superagent[method].apply(
-                     superagent, 
+                     superagent,
                      [`${api_url}${uri}`]
                    ).set('X-NSONE-Key', api_key)
                    .set('X-NSONE-Js-Api', require('../package.json').version)
 
-              
+
     apply_data.call(this, query, files)
-    return create_promise.call(this)               
+    return create_promise.call(this)
   }
 
   /**
    * Returns the current API key being used by the class.
    * @return {String} The API key
    */
-  static get_api_key() { 
+  static get_api_key() {
     return api_key
   }
-  
+
   /**
    * Sets the API key used by the class.
    * @param {String} key - The API key supplied by the user
@@ -132,7 +132,7 @@ function create_promise() {
         }
       }
 
-      if (this.is_json_response && this.method != 'del' && response.text !== '') {
+      if (this.is_json_response && this.method != 'del' && response && response.text !== '') {
         try {
           var parsed = JSON.parse(response.text)
         } catch(parse_err) {
@@ -158,7 +158,7 @@ function create_promise() {
  */
 function handle_error(err, response) {
   if(errorCb){
-    errorCb(err, response); 
+    errorCb(err, response);
   }
   if (response && response.text) {
     let final_message
@@ -167,9 +167,9 @@ function handle_error(err, response) {
     } catch(e) {
       final_message = response.text
     }
-    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${final_message} \n`, final_message) 
+    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${final_message} \n`, final_message)
   } else {
-    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${err.message} \n`, err.message) 
+    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${err.message} \n`, err.message)
   }
 }
 
