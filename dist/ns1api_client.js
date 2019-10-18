@@ -611,7 +611,7 @@ Emitter.prototype.hasListeners = function(event){
  * TODO: combatible error handling?
  */
 
-module.exports = function(arr, fn, initial){  
+module.exports = function(arr, fn, initial){
   var idx = 0;
   var len = arr.length;
   var curr = arguments.length == 3
@@ -621,7 +621,7 @@ module.exports = function(arr, fn, initial){
   while (idx < len) {
     curr = fn.call(null, curr, arr[idx], ++idx, arr);
   }
-  
+
   return curr;
 };
 },{}],4:[function(require,module,exports){
@@ -1867,7 +1867,7 @@ var api_key = void 0,
     successCb = void 0,
     startCb = void 0;
 
-/** 
+/**
  * Class representing all HTTP requests to the NS1 API. Uses the superagent
  * lib to be cross compatible w/ Node.js and Browser based environment.
  * @memberof NS1
@@ -2013,7 +2013,7 @@ function create_promise() {
         }
       }
 
-      if (_this2.is_json_response && _this2.method != 'del' && response.text !== '') {
+      if (_this2.is_json_response && _this2.method != 'del' && response && response.text !== '') {
         try {
           var parsed = JSON.parse(response.text);
         } catch (parse_err) {
@@ -2747,7 +2747,7 @@ var Record = function (_RestResource) {
 
     /**
      * Throws an error if an ID isn't supplied, informs the user to get records through a Zone object if they want a list.
-     * 
+     *
      * @param {String} id
      * @return {Promise}
      */
@@ -3170,7 +3170,7 @@ var Zone = function (_RestResource) {
 
     /**
      * Imports a zonefile and defines the zone's records w/ the info in the file.
-     * 
+     *
      * @param {String} zone_name
      * @param {String/File} file
      * @param {Boolean} async_call
