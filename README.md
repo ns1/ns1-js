@@ -1,5 +1,7 @@
 # NS1 JS API
 
+> This project is in [maintenence status](https://github.com/ns1/community/blob/master/project_status/MAINTENANCE.md).
+
 [![Build Status](https://travis-ci.org/ns1/ns1-js.svg?branch=master)](https://travis-ci.org/ns1/ns1-js)
 
 This is a high level JS client for NS1.com's REST API. Works as a Node.js module, tested on Node v 5+. Requires an NS1 account w/ an API key.
@@ -86,3 +88,7 @@ new NS1.NS1Request('get', '/zones/zone.com/www.zone.com/A')
   ...
 })
 ```
+
+Contributions
+=============
+Please refer to the [NS1 Contribution Guidelines](https://github.com/ns1/community) before opening a pull request or issue.
