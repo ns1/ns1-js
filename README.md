@@ -91,4 +91,4 @@ new NS1.NS1Request('get', '/zones/zone.com/www.zone.com/A')
 
 Contributions
 =============
-Please refer to the [NS1 Contribution Guidelines](https://github.com/ns1/community) before opening a pull request or issue.
+Pull Requests and issues are welcome. See the [NS1 Contribution Guidelines](https://github.com/ns1/community) for more information.
