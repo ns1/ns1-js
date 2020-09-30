@@ -161,22 +161,24 @@ function handle_error(err, response) {
     errorCb(err, response);
   }
   if (response && response.text) {
-    let final_message
+    let final_message, data
     try {
-      final_message = JSON.parse(response.text).message
+      data = JSON.parse(response.text)
+      final_message = data.message
     } catch(e) {
       final_message = response.text
     }
-    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${final_message} \n`, final_message)
+    return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${final_message} \n`, final_message, data)
   } else {
     return new NS1Error(`NS1 API Request Failed on \n ${this.method.toUpperCase()} ${api_url}${this.uri} \n ${err.message} \n`, err.message)
   }
 }
 
 class NS1Error extends Error {
-  constructor(message, raw) {
+  constructor(message, raw, data) {
     super(message)
     this.raw = raw
+    this.data = data
   }
 }
 
