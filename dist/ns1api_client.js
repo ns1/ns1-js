@@ -3243,7 +3243,7 @@ var Zone = function (_RestResource) {
   }, {
     key: 'networks',
     value: function networks() {
-      return new NS1Request('get', '/networks');
+      return new NS1Request('get', '/services?type=dns');
     }
   }]);
 

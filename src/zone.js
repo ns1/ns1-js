@@ -72,7 +72,7 @@ class Zone extends RestResource {
    * @return {Promise}
    */
   static networks() {
-    return new NS1Request('get', '/networks')
+    return new NS1Request('get', '/services?type=dns')
   }
 
   /**

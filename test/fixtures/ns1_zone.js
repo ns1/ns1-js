@@ -200,7 +200,7 @@ nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
 
 
 nock('https://portal.vagrant.nsone.net:443', {"encodedQueryParams":true})
-  .get('/v1/networks')
+  .get('/v1/services?type=dns')
   .reply(200, [{"network_id":0,"name":"NSONE Global Network","label":"NSONE"}], { date: 'Mon, 04 Jan 2016 23:11:31 GMT',
   'content-type': 'application/json',
   'content-length': '65',
